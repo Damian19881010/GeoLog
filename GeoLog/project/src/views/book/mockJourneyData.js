@@ -13,7 +13,23 @@
  *      title: string
  *      address: string
  *      note?: string
- *      tickets: boolean
+ *      tickets: null | {
+ *        selectedTrip: 'outbound' | 'inbound'
+ *        outbound: {
+ *          airline: string
+ *          bookingCode: string
+ *          flightNo: string
+ *          departureAt: string
+ *          notice: string
+ *        }
+ *        inbound: {
+ *          airline: string
+ *          bookingCode: string
+ *          flightNo: string
+ *          departureAt: string
+ *          notice: string
+ *        }
+ *      }
  *    }>
  *  }>
  */
@@ -34,7 +50,7 @@ export const journeyTabs = [
         title: 'start',
         address: '新北市永和區永平路368號23號',
         note: '出發前檢查 機票、藥品、護照、駕照 & 駕照譯本 是否都帶了',
-        tickets: false,
+        tickets: null,
       },
       {
         id: 'd1-2',
@@ -42,7 +58,24 @@ export const journeyTabs = [
         title: '桃園機場 ➔ 那霸機場',
         address: '桃園市大園區航站南路9號',
         note: null,
-        tickets: true,
+        // 機票
+        tickets: {
+          selectedTrip: 'outbound',
+          outbound: {
+            airline: 'Peach樂桃',
+            bookingCode: '5BPCRV',
+            flightNo: 'MM922',
+            departureAt: '2026/03/19 09:45',
+            notice: '如搭乘日本國內線航班，請於出發時間前120分鐘~50分鐘內完成手續',
+          },
+          inbound: {
+            airline: 'Peach樂桃',
+            bookingCode: '5BPCRV',
+            flightNo: 'MM929',
+            departureAt: '2026/03/23 16:50',
+            notice: '如搭乘日本國內線航班，請於出發時間前120分鐘~50分鐘內完成手續',
+          },
+        },
       },
       {
         id: 'd1-3',
@@ -50,7 +83,7 @@ export const journeyTabs = [
         title: '那霸機場（用餐 & 隨意逛逛）',
         address: '50 Kagamizu, Naha, Okinawa 901-0142 日本',
         note: '豬肉蛋飯糰「Pork Tamago Onigiri」珀塔瑪',
-        tickets: false,
+        tickets: null,
       },
       {
         id: 'd1-4',
@@ -58,7 +91,7 @@ export const journeyTabs = [
         title: 'OTS 取車（臨空豐崎營業所）',
         address: '3-37 Toyosaki, Tomigusuku, Okinawa 901-0225 日本',
         note: '機場免費接駁取車。由 4號出口 出來後請穿過人行道，前往左側的 「10-A (R-10)」 接駁站。預約號碼：OTS1409373,支付方式：當地支付,https://www.otsinternational.jp',
-        tickets: false,
+        tickets: null,
       },
       {
         id: 'd1-5',
@@ -66,7 +99,7 @@ export const journeyTabs = [
         title: '浦添西 PARCO CITY',
         address: '3-37 Toyosaki, Tomigusuku, Okinawa 901-0225 日本',
         note: '1樓免稅櫃台可退稅，購物滿 5000 即可退稅。部分店家要在該店家退稅。食：敘敘苑（燒肉）、A&W',
-        tickets: false,
+        tickets: null,
       },
       {
         id: 'd1-6',
@@ -74,7 +107,7 @@ export const journeyTabs = [
         title: 'Nest Hotel Naha Nishi（Nest 鳥巢飯店）',
         address: '1 Chome-20-19 Nishi, Naha, Okinawa 900-0036日本',
         note: '15:00 可入住',
-        tickets: false,
+        tickets: null,
       },
       {
         id: 'd1-7',
@@ -82,7 +115,7 @@ export const journeyTabs = [
         title: '國際通',
         address: '日本沖繩縣那霸市',
         note: '視體力狀況調整，太累就把國際通移到第三天晚上',
-        tickets: false,
+        tickets: null,
       },
     ],
   },
@@ -101,14 +134,14 @@ export const journeyTabs = [
         title: '國際通散步',
         address: '沖縄県那覇市牧志3丁目',
         note: '建議：先買伴手禮，回程再補缺的。',
-        tickets: false,
+        tickets: null,
       },
       {
         id: 'd2-2',
         time: '12:00 - 13:00',
         title: '午餐：沖繩麵',
         address: '沖縄県那覇市久茂地2丁目',
-        tickets: false,
+        tickets: null,
       },
     ],
   },

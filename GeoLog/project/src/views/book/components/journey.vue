@@ -107,7 +107,7 @@
       </v-btn>
     </div>
     <div v-if="item.tickets" class="mt-4">
-      <airTickets />
+      <airTickets :ticket="getDisplayTicket(item.tickets)" />
     </div>
     <!-- 備註 -->
     <div class="section-block mt-5" v-if="item.note" >
@@ -130,6 +130,44 @@
 import { computed, ref, watch } from 'vue'
 import airTickets from '@/components/flightInfo/ticket.vue'
 import EditDate from './editDate.vue'
+
+const createDefaultTickets = () => ({
+  selectedTrip: 'outbound',
+  outbound: {
+    airline: 'Peach樂桃',
+    bookingCode: '5BPCRV',
+    flightNo: 'MM922',
+    departureAt: '2026/03/19 09:45',
+    notice: '如搭乘日本國內線航班，請於出發時間前120分鐘~50分鐘內完成手續',
+  },
+  inbound: {
+    airline: 'Peach樂桃',
+    bookingCode: '5BPCRV',
+    flightNo: 'MM929',
+    departureAt: '2026/03/23 16:50',
+    notice: '如搭乘日本國內線航班，請於出發時間前120分鐘~50分鐘內完成手續',
+  },
+})
+
+const normalizeTickets = (tickets) => {
+  if (!tickets) return null
+  if (tickets === true) return createDefaultTickets()
+
+  const defaults = createDefaultTickets()
+  const selectedTrip = tickets.selectedTrip === 'inbound' ? 'inbound' : 'outbound'
+
+  return {
+    selectedTrip,
+    outbound: {
+      ...defaults.outbound,
+      ...(tickets.outbound ?? {}),
+    },
+    inbound: {
+      ...defaults.inbound,
+      ...(tickets.inbound ?? {}),
+    },
+  }
+}
 
 const props = defineProps({
     day: {
@@ -170,7 +208,7 @@ const editFormData = computed(() => {
       title: '',
       address: '',
       note: '',
-      tickets: false,
+      tickets: null,
     }
   }
 
@@ -182,7 +220,7 @@ const editFormData = computed(() => {
     title: item.title ?? '',
     address: item.address ?? '',
     note: item.note ?? '',
-    tickets: Boolean(item.tickets),
+    tickets: normalizeTickets(item.tickets),
   }
 })
 
@@ -191,7 +229,7 @@ watch(
     (nextDay) => {
         localItems.value = (nextDay?.items ?? []).map((item) => ({
           ...item,
-          tickets: Boolean(item?.tickets),
+          tickets: normalizeTickets(item?.tickets),
         }))
 
     if (!isHeaderEditing.value) {
@@ -234,7 +272,7 @@ const saveItem = (payload) => {
     title: payload.title,
     address: payload.address,
     note: payload.note,
-    tickets: Boolean(payload.tickets),
+    tickets: normalizeTickets(payload.tickets),
   }
 
   localItems.value.splice(index, 1, updatedItem)
@@ -272,6 +310,13 @@ const deleteHeader = () => {
 const openGoogleMap = (addr) => {
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`
     window.open(url, '_blank')
+}
+
+const getDisplayTicket = (tickets) => {
+  const normalizedTickets = normalizeTickets(tickets)
+  if (!normalizedTickets) return null
+
+  return normalizedTickets[normalizedTickets.selectedTrip]
 }
 </script>
 
