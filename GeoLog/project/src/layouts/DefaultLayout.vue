@@ -1,15 +1,30 @@
 <template>
-  <div class="default-layout">
-    <AppHeader />
-
-    <v-main>
-      <v-container class="py-6">
-        <router-view />
+  <v-layout class="default-layout">
+    <v-main class="layout-main">
+      <v-container class="layout-container py-6 ">
+        <section class="page-content">
+          <router-view />
+        </section>
       </v-container>
     </v-main>
-  </div>
+  </v-layout>
 </template>
 
-<script setup>
-import AppHeader from '@/components/common/AppHeader.vue'
-</script>
+<style lang="scss" scoped>
+.default-layout {
+  min-height: 100vh;
+}
+
+.layout-main {
+  padding: 0;
+}
+
+.layout-container {
+  max-width: 1200px;
+  height: 100vh;
+}
+
+.page-content {
+  margin-top: 85px;
+}
+</style>

@@ -23,6 +23,11 @@ const routes = [
     name: 'not-found',
     component: () => import('@/views/NotFoundView.vue'),
   },
+  {
+    path: '/book',
+    name: 'book',
+    component: () => import('@/views/book/index.vue'),
+  },
 ]
 
 const router = createRouter({

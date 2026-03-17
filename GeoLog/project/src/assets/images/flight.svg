@@ -1,0 +1,7 @@
+<svg width="320" height="180" viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="320" height="180" rx="24" fill="#0B1F3A"/>
+  <circle cx="255" cy="46" r="18" fill="#F77F00" fill-opacity="0.9"/>
+  <path d="M69 128C96 111 128 92 172 79C188 74 198 74 214 77L247 83C253 84 256 90 254 96C252 102 246 105 240 104L216 100L182 121L214 136L232 132C238 131 244 135 245 142C246 148 242 154 235 155L207 159L175 146L149 160C143 164 135 163 130 157L124 151L145 136L128 129L108 137L96 130L113 119L89 114L69 128Z" fill="#D9ECFF"/>
+  <path d="M56 137C86 117 126 95 170 83" stroke="#7CC7FF" stroke-width="8" stroke-linecap="round"/>
+  <text x="34" y="40" fill="#D9ECFF" font-family="Arial, sans-serif" font-size="18" letter-spacing="2">FLIGHT INFO</text>
+</svg>
