@@ -135,16 +135,36 @@ $heights: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
 
 
 .header {
-  backdrop-filter: blur(3px);
-  background-color: #000e24a2 !important;
-  border: 1px solid rgb(255, 102, 0) !important;
-  color: rgb(255, 102, 0);
+  
   position: fixed;
   z-index: 999 !important;
-  max-width: 1200px !important;
   left: 50%;
   transform: translateX(-50%);
   top: 15px;
+
+  .centerpart {
+    max-width: 60% !important;
+    margin: 0 auto !important;
+    backdrop-filter: blur(3px);
+    background-color: #000e24a2 !important;
+    border: 1px solid rgb(255, 102, 0) !important;
+    color: rgb(255, 102, 0);
+  }
+
+  .bottompart {
+    // width: 100%;
+    // border: 1px solid rgb(255, 102, 0);
+    // box-shadow: 0 0 12px rgba(255, 102, 0, 0.16);
+    background-color: #000e2400 !important;
+    border-radius: 999px;
+    opacity: 0.8;
+    pointer-events: none;
+    position: fixed;
+    right: 20px;
+    top: 5px;
+    z-index: 998 !important;
+  }
+
   @include breakpoint(600px) {
     min-height: 64px !important;
     position: fixed;
@@ -153,31 +173,34 @@ $heights: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
     left: 50%;
     transform: translateX(-50%);
   }
-  .title {
-  flex: 0 1 auto;
-  margin-left: 8px;
-}
 
-.search {
-  position: fixed;
-  top: 15px;
-  right: 15px;
-  z-index: 9999 !important;
-}
+  .title {
+    flex: 0 1 auto;
+    margin-left: 8px;
+  }
+
+  .search {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 9999 !important;
+  }
 }
 
 .nav {
-    background-color: rgba(27, 27, 27, 0.438) !important;
-    backdrop-filter: blur(5px);
-    .user {
-        margin-top: 12px;
-        @include breakpoint(600px) {
-    margin-top: 120px;
+  background-color: rgba(27, 27, 27, 0.438) !important;
+  backdrop-filter: blur(5px);
+  position: fixed !important;
+  top: 0;
+  .user {
+    margin-top: 12px !important;
+
+    @include breakpoint(600px) {
+      margin-top: 120px !important;
 
 
-
-  }
     }
+  }
 }
 
 .schedule-dialog {
@@ -419,5 +442,5 @@ $heights: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
 
 .remark {
   background-color: #ff7b0021;
-  
+
 }

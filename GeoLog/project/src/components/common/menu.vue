@@ -11,6 +11,13 @@
             prepend-icon="mdi-notebook-plus-outline"
             title="Home"
             to="/"
+            exact
+            @click="drawer = false">
+        </v-list-item>
+        <v-list-item 
+            prepend-icon="mdi-view-dashboard-outline"
+            title="Dashboard"
+            to="/dashboard"
             @click="drawer = false">
         </v-list-item>
         <v-list-item 
@@ -18,6 +25,12 @@
             title="Book"
             to="/book"
             @click="drawer = false">
+        </v-list-item>
+        <v-divider class="my-2" opacity="0.5"></v-divider>
+        <v-list-item
+            prepend-icon="mdi-logout"
+            title="Logout"
+            @click="handleLogout">
         </v-list-item>
         
 
@@ -30,17 +43,26 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { clearAuthSession } from '@/utils/auth'
 
 const props = withDefaults(defineProps<{ modelValue?: boolean }>(), {
   modelValue: false,
 })
 
 const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
+const router = useRouter()
 
 const drawer = computed({
   get: () => props.modelValue,
   set: (value: boolean) => emit('update:modelValue', value),
 })
+
+const handleLogout = async () => {
+    clearAuthSession()
+    drawer.value = false
+    await router.push({ name: 'login' })
+}
 </script>
 
 
