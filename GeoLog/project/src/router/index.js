@@ -1,33 +1,26 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import DefaultLayout from '@/layouts/DefaultLayout.vue'
-
-const routes = [
-  {
-    path: '/',
-    component: DefaultLayout,
-    children: [
-      {
-        path: '',
-        name: 'home',
-        component: () => import('@/views/HomeView.vue'),
-      },
-      {
-        path: 'dashboard',
-        name: 'dashboard',
-        component: () => import('@/views/DashboardView.vue'),
-      },
-    ],
-  },
-  {
-    path: '/:pathMatch(.*)*',
-    name: 'not-found',
-    component: () => import('@/views/NotFoundView.vue'),
-  },
-]
+import { publicRoutes } from './routes/publicRoutes'
+import { privateRoutes } from './routes/privateRoutes'
+import { registerAuthGuards } from './guards'
 
 const router = createRouter({
   history: createWebHistory(),
-  routes,
+  scrollBehavior: () => ({ top: 0 }),
+  routes: [
+    ...publicRoutes,
+    ...privateRoutes,
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      meta: {
+        allowAnonymous: true,
+        title: 'Page Not Found',
+      },
+      component: () => import('@/views/NotFoundView.vue'),
+    },
+  ],
 })
+
+registerAuthGuards(router)
 
 export default router
