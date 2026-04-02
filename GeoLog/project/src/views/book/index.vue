@@ -67,6 +67,8 @@
     </div>
 
   </v-container>
+  
+  <FlightTicket></FlightTicket>
 
   <v-container class="pa-0 container  " max-width="925">
 
@@ -89,7 +91,9 @@
 import { computed, ref, watch } from 'vue'
 import EditTab from './components/editTab.vue'
 import Journey from './components/journey.vue'
+import FlightTicket from '@/components/flightInfo/flight.vue'
 import { journeyTabs } from './mockJourneyData'
+
 
 
 const length = ref(journeyTabs.length)

@@ -75,26 +75,27 @@ p {
   transition: all 0.3s ease;
 
   &:hover {
-    width: 10px;
+    width: 5px;
     transition: all 0.3s ease;
+    background-color: #000129 !important;
   }
 }
 
 // 2.軌道背景底色
 ::-webkit-scrollbar-track {
-  background: #a7000010;
+  background: #a7000010 !important;
 
 }
 
 // 3.滑桿顏色
 ::-webkit-scrollbar-thumb {
-  background: #b1b1b1;
+  background: #b1b1b1 !important;
   border-radius: 50px;
 }
 
 // 4.滑桿滑鼠滑入時的顏色
 ::-webkit-scrollbar-thumb:hover {
-  background: #b34700;
+  background: #b34700 !important;
 
 }
 
