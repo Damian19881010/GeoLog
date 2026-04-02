@@ -69,6 +69,7 @@
   </v-container>
   
   <FlightTicket></FlightTicket>
+  <carInfo></carInfo>
 
   <v-container class="pa-0 container  " max-width="925">
 
@@ -91,6 +92,7 @@
 import { computed, ref, watch } from 'vue'
 import EditTab from './components/editTab.vue'
 import Journey from './components/journey.vue'
+import carInfo from '@/components/carInfo/car.vue'
 import FlightTicket from '@/components/flightInfo/flight.vue'
 import { journeyTabs } from './mockJourneyData'
 
