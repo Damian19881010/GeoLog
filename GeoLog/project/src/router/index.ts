@@ -47,6 +47,12 @@ const router = createRouter({
           path: 'book',
           name: 'book',
           meta: { title: 'Book', containerized: false },
+          component: () => import('@/views/book/list.vue'),
+        },
+        {
+          path: 'book/:id',
+          name: 'book-detail',
+          meta: { title: 'Journey', containerized: false },
           component: () => import('@/views/book/index.vue'),
         },
       ],

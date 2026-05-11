@@ -9,6 +9,8 @@
       prepend-icon="mdi-pencil"
     />
     <v-spacer></v-spacer>
+
+    <v-btn v-if="!isEditMode" size="small" color="orange21" prepend-icon="mdi-arrow-left" text="返回列表" @click="goToList" />
     <v-btn
       v-if="isEditMode"
       :disabled="!length"
@@ -25,6 +27,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const props = withDefaults(defineProps<{
   modelValue?: boolean
@@ -43,5 +48,9 @@ const isEditMode = computed({
   get: () => props.modelValue,
   set: (value: boolean) => emit('update:modelValue', value),
 })
+
+const goToList = () => {
+  router.push({ name: 'book' })
+}
 </script>
 

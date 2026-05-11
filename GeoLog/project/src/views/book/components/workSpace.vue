@@ -123,7 +123,8 @@ watch(editMode, value => {
 
 <style scoped lang="scss">
 .top {
-    background-color: rgba(88, 0, 230, 0.397) !important;
+    background-color: rgba(0, 157, 230, 0.205) !important;
+    border-radius: 16px;
 }
 </style>
 

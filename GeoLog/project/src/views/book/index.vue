@@ -56,7 +56,7 @@ watch(visibleDayCount, count => {
 .workspace {
   position: fixed;
   z-index: 900;
-  width: 95%;
+  width: 80%;
   left: 0;
   right: 0;
   margin: 0 auto;
@@ -65,7 +65,7 @@ watch(visibleDayCount, count => {
 }
 
 .page {
-  width: 95%;
+  width: 80%;
   margin: 10px auto 0;
   position: fixed;
   padding: 0 15px;

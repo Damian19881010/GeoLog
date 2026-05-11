@@ -1,7 +1,6 @@
 <template>
 
   <AppHeader
-    class="mt-10"
     @toggle-search="searchOpen = !searchOpen"
     @toggle-menu="menuOpen = !menuOpen"/>
   
@@ -34,7 +33,8 @@ const isContainerized = computed(() => route.meta.containerized !== false)
 
 .default-layout {
   min-height: 100vh;
-  overflow: visible;
+  // overflow: visible;
+  overflow: hidden;
   // background: linear-gradient(180deg, #002261 0%, #0f0047 50%, #0f004770 75%, #00072c50 100%);
 }
 
