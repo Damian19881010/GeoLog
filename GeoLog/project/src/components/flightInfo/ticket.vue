@@ -16,13 +16,16 @@
   </div>
 </template>
 
-<script setup>
-const props = defineProps({
+<script setup lang="ts">
+const props = defineProps<{
   ticket: {
-    type: Object,
-    required: true,
-  },
-})
+    airline: string
+    bookingCode: string
+    flightNo: string
+    departureAt: string
+    notice: string
+  }
+}>()
 
 import flightImage from '@/assets/images/flight.png'
 </script>

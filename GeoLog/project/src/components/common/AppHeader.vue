@@ -1,33 +1,45 @@
 <template>
   <v-container class="header pa-0 d-flex align-center" fluid>
-    <v-toolbar class="px-2 centerpart" density="compact" elevation="5" height="72" rounded="pill">
+    <v-toolbar class="px-8 centerpart" density="compact" height="90" rounded="pill">
       <template #prepend>
-        <v-btn icon="mdi-menu" color="orange21" variant="text" @click="emit('toggle-menu')" />
+        <v-btn class="menu-toggle-btn" icon="mdi-menu" color="orange21" variant="text" @click="emit('toggle-menu')" />
+        <v-img :src="geminiLogo" width="60" height="60"></v-img>
         <v-toolbar-title class="title text-orange21 font-weight-bold">
-          GeoLog
+          <span >GeoLog</span>
+          <span class="text-blue-grey-lighten-3 ms-2 text-h6">日誌系統</span>
         </v-toolbar-title>
       </template>
 
 
       <template #append>
-        <v-btn icon="mdi-magnify" color="orange21" variant="text" @click="emit('toggle-search')" />
+        <div class="d-flex ga-3">
+          <!-- <v-btn class="border border-opacity-100 border-orange21" size="small" variant="text" color="orange21" icon="mdi-magnify"  @click="emit('toggle-search')" /> -->
+          <v-btn class="border border-opacity-100 border-orange21" size="small" variant="tonal" color="white" icon="mdi-cog-outline"></v-btn>
+          <v-btn class="border border-opacity-100 border-orange21" size="small" variant="tonal" color="orange21" icon="mdi-bell"></v-btn>
+          <v-btn class="border border-opacity-100 border-orange21" size="small" variant="tonal" color="orange21" icon="mdi-account"></v-btn>
+        </div>
       </template>
     </v-toolbar>
-
-    <v-card class="d-flex align-center ga-3 bottompart px-5" elevation="0" rounded="pill">
-      <v-btn class="border border-opacity-100 border-orange21" variant="tonal" color="orange21" icon="mdi-bell"></v-btn>
-      <v-btn class="border border-opacity-100 border-orange21" variant="tonal" color="orange21" icon="mdi-account"></v-btn>
-    </v-card>
   </v-container>
-
-
 </template>
 
 <script setup lang="ts">
-// import logoUrl from '@/assets/01.svg'
+import geminiLogo from '@/assets/images/gemini.svg'
 
 const emit = defineEmits<{
   (e: 'toggle-search'): void
   (e: 'toggle-menu'): void
 }>()
 </script>
+
+<style scoped>
+.menu-toggle-btn {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .menu-toggle-btn {
+    display: inline-grid;
+  }
+}
+</style>

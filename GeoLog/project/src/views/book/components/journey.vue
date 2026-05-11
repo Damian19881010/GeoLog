@@ -1,6 +1,6 @@
 <template>
   <!-- 標頭 前言-->
-  <v-card v-if="showHeader" class="pa-5  info-bord1" color="transparent" elevation="5">
+  <v-card v-if="showHeader" class="pa-5 mt-5  info-bord1" color="transparent" elevation="5">
     <!-- 預覽模式 -->
 
     <template v-if="!isHeaderEditing">
@@ -126,12 +126,20 @@
 
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import airTickets from '@/components/flightInfo/ticket.vue'
 import EditDate from './editDate.vue'
+import type {
+  EditJourneyInitialData,
+  FlightTicketDetail,
+  JourneyDay,
+  JourneyItem,
+  JourneyTicketInput,
+  JourneyTickets,
+} from '../types'
 
-const createDefaultTickets = () => ({
+const createDefaultTickets = (): JourneyTickets => ({
   selectedTrip: 'outbound',
   outbound: {
     airline: 'Peach樂桃',
@@ -149,7 +157,7 @@ const createDefaultTickets = () => ({
   },
 })
 
-const normalizeTickets = (tickets) => {
+const normalizeTickets = (tickets: JourneyTicketInput | undefined): JourneyTickets | null => {
   if (!tickets) return null
   if (tickets === true) return createDefaultTickets()
 
@@ -169,18 +177,14 @@ const normalizeTickets = (tickets) => {
   }
 }
 
-const props = defineProps({
-    day: {
-        type: Object,
-        required: true,
-    },
-    isEditMode: {
-        type: Boolean,
-        default: false,
-    },
+const props = withDefaults(defineProps<{
+  day: JourneyDay
+  isEditMode?: boolean
+}>(), {
+  isEditMode: false,
 })
 
-const localItems = ref([])
+const localItems = ref<JourneyItem[]>([])
 
 const showHeader = ref(true)
 const isHeaderEditing = ref(false)
@@ -189,7 +193,7 @@ const headerDraft = ref({ title: '', rhythm: '' })
 const editDialog = ref(false)
 const editingIndex = ref(-1)
 
-const parseTimeRange = (time = '') => {
+const parseTimeRange = (time = ''): { startTime: string; endTime: string } => {
   const [startTime = '', endTime = ''] = String(time).split(' - ')
 
   return {
@@ -198,7 +202,7 @@ const parseTimeRange = (time = '') => {
   }
 }
 
-const editFormData = computed(() => {
+const editFormData = computed<EditJourneyInitialData>(() => {
   const item = localItems.value[editingIndex.value]
 
   if (!item) {
@@ -227,7 +231,7 @@ const editFormData = computed(() => {
 watch(
     () => props.day,
     (nextDay) => {
-        localItems.value = (nextDay?.items ?? []).map((item) => ({
+        localItems.value = (nextDay?.items ?? []).map((item: JourneyItem) => ({
           ...item,
           tickets: normalizeTickets(item?.tickets),
         }))
@@ -251,23 +255,25 @@ const startEditHeader = () => {
   isHeaderEditing.value = true
 }
 
-const openEditDialog = (index) => {
+const openEditDialog = (index: number): void => {
   if (!props.isEditMode) return
 
   editingIndex.value = index
   editDialog.value = true
 }
 
-const saveItem = (payload) => {
+const saveItem = (payload: EditJourneyInitialData): void => {
   const index = editingIndex.value
   if (index < 0) return
+  const currentItem = localItems.value[index]
+  if (!currentItem) return
 
   const startTime = payload.startTime?.trim() ?? ''
   const endTime = payload.endTime?.trim() ?? ''
   const time = startTime && endTime ? `${startTime} - ${endTime}` : startTime || endTime
 
-  const updatedItem = {
-    ...localItems.value[index],
+  const updatedItem: JourneyItem = {
+    ...currentItem,
     time,
     title: payload.title,
     address: payload.address,
@@ -286,7 +292,12 @@ const saveItem = (payload) => {
 
 const saveHeader = () => {
   if (!props.isEditMode) return
-  if (!props.day.header) props.day.header = {}
+  if (!props.day.header) {
+    props.day.header = {
+      title: '',
+      rhythm: '',
+    }
+  }
 
   props.day.header.title = headerDraft.value.title
   props.day.header.rhythm = headerDraft.value.rhythm
@@ -307,14 +318,13 @@ const deleteHeader = () => {
   window.alert('行程已刪除')
 }
 
-const openGoogleMap = (addr) => {
+const openGoogleMap = (addr: string): void => {
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`
-    window.open(url, '_blank')
+    window.open(url, '_blank', 'noopener,noreferrer')
 }
 
-const getDisplayTicket = (tickets) => {
-  const normalizedTickets = normalizeTickets(tickets)
-  if (!normalizedTickets) return null
+const getDisplayTicket = (tickets: JourneyTicketInput): FlightTicketDetail => {
+  const normalizedTickets = normalizeTickets(tickets) ?? createDefaultTickets()
 
   return normalizedTickets[normalizedTickets.selectedTrip]
 }

@@ -117,11 +117,16 @@
   </v-dialog>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, reactive, watch } from 'vue'
 import airTickets from '@/components/flightInfo/ticket.vue'
+import type {
+  EditJourneyInitialData,
+  JourneyTickets,
+  TripDirection,
+} from '../types'
 
-const createDefaultTickets = () => ({
+const createDefaultTickets = (): JourneyTickets => ({
   selectedTrip: 'outbound',
   outbound: {
     airline: 'Peach樂桃',
@@ -139,7 +144,7 @@ const createDefaultTickets = () => ({
   },
 })
 
-const normalizeTickets = (tickets) => {
+const normalizeTickets = (tickets: JourneyTickets | null | undefined): JourneyTickets | null => {
   if (!tickets) return null
 
   const defaults = createDefaultTickets()
@@ -158,25 +163,25 @@ const normalizeTickets = (tickets) => {
   }
 }
 
-const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    default: false,
-  },
-  initialData: {
-    type: Object,
-    default: () => ({
-      startTime: '',
-      endTime: '',
-      title: '',
-      address: '',
-      note: '',
-      tickets: null,
-    }),
-  },
+const props = withDefaults(defineProps<{
+  modelValue?: boolean
+  initialData?: EditJourneyInitialData
+}>(), {
+  modelValue: false,
+  initialData: () => ({
+    startTime: '',
+    endTime: '',
+    title: '',
+    address: '',
+    note: '',
+    tickets: null,
+  }),
 })
 
-const emit = defineEmits(['update:modelValue', 'save'])
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: boolean): void
+  (e: 'save', payload: EditJourneyInitialData): void
+}>()
 
 const dialogModel = computed({
   get: () => props.modelValue,
@@ -190,7 +195,7 @@ const form = reactive({
   address: '',
   note: '',
   hasTickets: false,
-  ticketDirection: 'outbound',
+  ticketDirection: 'outbound' as TripDirection,
   tickets: createDefaultTickets(),
 })
 
@@ -209,7 +214,7 @@ const resetForm = () => {
 
 const selectedTicket = computed(() => form.tickets[form.ticketDirection])
 
-const selectTicketDirection = (direction, checked) => {
+const selectTicketDirection = (direction: TripDirection, checked: boolean | null): void => {
   if (!checked) return
 
   form.ticketDirection = direction

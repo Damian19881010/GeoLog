@@ -1,3 +1,5 @@
+import type { JourneyDay } from './types'
+
 /**
  * 假資料：書本行程（以 Tab/Day 為單位）
  *
@@ -34,7 +36,7 @@
  *  }>
  */
 
-export const journeyTabs = [
+export const journeyTabs: JourneyDay[] = [
   {
     id: 'day-1',
     date: '2025-03-19',

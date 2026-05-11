@@ -45,7 +45,7 @@
   </v-card>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { reactive } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { persistAuthSession } from '@/utils/auth'
@@ -61,11 +61,16 @@ const form = reactive({
 const handleLogin = async () => {
   persistAuthSession(`${form.account}-session`)
 
-  const redirectPath = typeof route.query.redirect === 'string'
+  const redirect = typeof route.query.redirect === 'string'
     ? route.query.redirect
     : '/'
 
-  await router.replace(redirectPath)
+  // 防止 Open Redirect：只允許相對路徑
+  const safeRedirect = redirect.startsWith('/') && !redirect.startsWith('//')
+    ? redirect
+    : '/'
+
+  await router.replace(safeRedirect)
 }
 </script>
 

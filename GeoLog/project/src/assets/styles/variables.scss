@@ -11,7 +11,7 @@
 
 
 * {
-  font-family: "微軟正黑體";
+  font-family: 'Noto Sans TC', '微軟正黑體', sans-serif;
 }
 
 /* 【 設置RWD 】*/
@@ -130,26 +130,29 @@ $heights: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
 
 .app {
   min-height: 100vh;
+  // background-color: #000000 !important;
   background: linear-gradient(180deg, #000129 0%, #03002e 5%, #000607 100%) !important;
+  // background: linear-gradient(180deg, #002261 0%, #0f0047 50%, #0f004770 75%, #00072c50 100%);
+  
 }
 
 
 
 .header {
-  
-  position: fixed;
+  position: sticky;
+  top: 40px;
   z-index: 999 !important;
-  left: 50%;
-  transform: translateX(-50%);
-  top: 15px;
-
   .centerpart {
-    max-width: 60% !important;
+    max-width: 1152px !important;
     margin: 0 auto !important;
     backdrop-filter: blur(3px);
     background-color: #000e24a2 !important;
     border: 1px solid rgb(255, 102, 0) !important;
     color: rgb(255, 102, 0);
+    box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.705);
+    @include breakpoint(1440px) {
+      max-width: 80% !important;
+    }
   }
 
   .bottompart {
@@ -168,11 +171,12 @@ $heights: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
 
   @include breakpoint(600px) {
     min-height: 64px !important;
-    position: fixed;
+    position: sticky;
+    top: 16px;
     z-index: 999 !important;
     width: 95% !important;
-    left: 50%;
-    transform: translateX(-50%);
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .title {
@@ -443,42 +447,17 @@ $heights: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
 
 .remark {
   background-color: #ff7b0021;
-
 }
 
-.addflight {
-    width: 300px;
-    position: fixed;
-    z-index: 999;
-    top: 150px !important;
-    right: 50px !important;
-    background-color: rgba(250, 235, 215, 0.13);
-    border: 1px solid rgba(250, 235, 215, 0.3);
-    border-radius: 16px;
-    @include breakpoint(1600px) {
-      right: 15px !important;
-    }
-    @include breakpoint(1536px) {
-      width: 200px;
-      
-    }
-}
 
+
+.addflight,
 .addcar {
-    width: 300px;
-    position: fixed;
-    z-index: 999;
-    top: 390px !important;
-    right: 50px !important;
+    width: 100%;
+    position: relative;
+    z-index: 1;
     background-color: rgba(250, 235, 215, 0.13);
     border: 1px solid rgba(250, 235, 215, 0.3);
     border-radius: 16px;
-    @include breakpoint(1600px) {
-      right: 15px !important;
-    }
-    @include breakpoint(1536px) {
-      width: 200px;
-      top: 430px !important;
-    }
 }
 

@@ -1,155 +1,88 @@
 <template>
-  <v-container class="pa-0 container1" max-width="100%">
+  <v-container fluid>
 
-    <!-- 控制板塊 -->
-    <div class="worktop" color="transparent" >
-      <!-- 編輯控制區 -->
-      <v-card class="d-flex align-center ga-3" color="transparent" elevation="0">
-        <v-switch v-model="isEditMode" label="Edit Mode" color="orange-darken-3" class=" text-orange font-weight-bold"
-          hide-details="auto" prepend-icon="mdi-pencil"></v-switch>
-        <v-spacer></v-spacer>
-        <v-btn v-if="isEditMode" :disabled="!length" size="small" color="orange" prepend-icon="mdi-cog-outline" text="編輯頁籤"
-          variant="tonal" @click="editTabDialog = true"></v-btn>
-        <v-btn v-if="isEditMode" size="small" color="orange21" prepend-icon="mdi-plus" text="新增行程"></v-btn>
-      </v-card>
+    <section class="workspace">
+      <WorkSpace v-model:tab="tab" v-model:is-edit-mode="isEditMode" :days="visibleJourneyTabs"
+        @open-edit-tab="editTabDialog = true" />
+    </section>
 
-
-      <!-- top -->
-      <v-card class="top pa-5 border" color="transparent" elevation="5">
-        <!-- 預覽 -->
-        <div v-if="!Edit">
-          <div class="d-flex justify-space-between align-center ga-2">
-            <p class="text-h3 font-weight-bold text-white2">Okinawa</p>
-            <v-spacer></v-spacer>
-            <v-btn v-if="isEditMode" size="x-small" icon="mdi-cog-outline" @click="Edit = !Edit"></v-btn>
-          </div>
+    <section class="page">
+      <v-window v-model="tab" class="date">
+        <v-window-item v-for="(day, idx) in visibleJourneyTabs" :key="day.id" :value="idx + 1">
+          <Journey :day="day" :is-edit-mode="isEditMode" />
+        </v-window-item>
+      </v-window>
+    </section>
 
 
-          <!-- 副標 -->
-          <p class="text-white2 ma-0">ver 3.0</p>
-        </div>
-        <!-- 編輯時顯示 -->
-        <div v-else>
-          <div class="mb-2 d-flex justify-space-between align-center ga-2">
-            <v-spacer></v-spacer>
-            <v-btn size="x-small" class="text-white" color="orange" icon="mdi-content-save"
-              @click="Edit = !Edit"></v-btn>
-          </div>
-          <v-text-field label="標題" class="text-orange" variant="outlined" color="orange" hide-details="auto"
-            density="compact" base-color="orange"></v-text-field>
-          <v-text-field class="mt-2 text-orange" label="內容" aria-placeholder="請填寫內容" variant="outlined" color="orange"
-            hide-details="auto" density="compact" base-color="orange"></v-text-field>
-        </div>
-      </v-card>
-
-      <!-- tab控制 -->
-      <v-card class="mt-5" elevation="5" color="transparent">
-        <div class="d-flex justify-space-between align-center ga-2 px-3">
-          <!-- <v-btn class="text-white" size="x-small" icon="mdi-plus"  variant="tonal" @click="length++"></v-btn> -->
-          <!-- <v-btn :disabled="!length" size="x-small" class="text-white" icon="mdi-minus" variant="tonal" @click="length--"></v-btn> -->
-          <v-spacer></v-spacer>
 
 
-        </div>
+    <!-- <FlightTicket /> -->
+    <!-- <CarInfo /> -->
 
-        <v-tabs v-model="tab" class="text-white2 tab">
-          <v-tab class="rounded-lg tabs" color="orange" v-for="(day, idx) in visibleJourneyTabs" :key="day.id"
-            :text="day.tabText" :value="idx + 1">
-          </v-tab>
-        </v-tabs>
-        <v-divider color="orange-darken-4" opacity="1"></v-divider>
-      </v-card>
 
-      <div class="w-100 d-flex justify-end align-center ">
-        <v-spacer></v-spacer>
 
-      </div>
-    </div>
-
-  </v-container>
-  
-  <FlightTicket></FlightTicket>
-  <carInfo></carInfo>
-
-  <v-container class="pa-0 container  " max-width="925">
-
-    <!-- 行程排成 -->
-    <v-window class="date " v-model="tab">
-
-      <v-window-item v-for="(day, idx) in visibleJourneyTabs" :key="day.id" :value="idx + 1">
-        <Journey :day="day" :is-edit-mode="isEditMode" />
-      </v-window-item>
-    </v-window>
-
-    <!-- 編輯分頁內容 -->
     <EditTab v-model="editTabDialog" />
   </v-container>
-
-
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import CarInfo from '@/components/carInfo/car.vue'
+import FlightTicket from '@/components/flightInfo/flight.vue'
 import EditTab from './components/editTab.vue'
 import Journey from './components/journey.vue'
-import carInfo from '@/components/carInfo/car.vue'
-import FlightTicket from '@/components/flightInfo/flight.vue'
+import WorkSpace from './components/workSpace.vue'
 import { journeyTabs } from './mockJourneyData'
 
-
-
-const length = ref(journeyTabs.length)
+const visibleDayCount = ref(journeyTabs.length)
 const tab = ref(1)
-const Edit = ref(false)
 const isEditMode = ref(false)
 const editTabDialog = ref(false)
 
-const visibleJourneyTabs = computed(() => journeyTabs.slice(0, length.value))
+const visibleJourneyTabs = computed(() => journeyTabs.slice(0, visibleDayCount.value))
 
-
-
-watch(length, val => {
-  if (val < 1) {
+watch(visibleDayCount, count => {
+  if (count < 1) {
     tab.value = 1
     return
   }
-  if (tab.value > val) tab.value = val
+
+  if (tab.value > count) tab.value = count
 })
 </script>
 
 <style scoped lang="scss">
-.container1 {
-  overflow: hidden !important;
-  background: linear-gradient(180deg, #002261 0%, #0f0047 50%, #0f004770 75%, #00072c50 100%) !important;
-  height: 334px !important;
-  position: fixed !important;
-  top: 0px;
-  z-index: 100 !important;
-  // border: 1px solid rgba(255, 255, 255, 0.774);
-}
-
-.top {
-  background-color: rgba(240, 255, 255, 0.096);
-  border-radius: 24px;
-}
-
-.container {
-  // background-color: rgba(0, 255, 255, 0.171);
-  padding: 10px 0 0;
-}
-
-.worktop {
-  width: 925px;
-  position: fixed !important;
-  top: 100px;
-  z-index: 10000;
-  left: 50%;
-  transform: translateX(-50%);
-  backdrop-filter: blur(5px);
+.workspace {
+  position: fixed;
+  z-index: 900;
+  width: 95%;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  padding-bottom: 12px;
 
 }
 
-.date {
-  margin-top: 342.5px !important;
+.page {
+  width: 95%;
+  margin: 10px auto 0;
+  position: fixed;
+  padding: 0 15px;
+  top: 380px;
+  left: 0;
+  right: 0;
+  max-height: calc(100% - 250px);
+  overflow: auto;
+  &::-webkit-scrollbar {
+    width: 5px !important;
+  }
 }
+
+@media (max-width: 600px) {
+  .workspace {
+    top: calc(16px + 90px);
+  }
+}
+
 </style>

@@ -129,8 +129,27 @@
     </v-dialog>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, reactive } from 'vue'
+
+type CarSectionKey = 'departure' | 'return'
+
+interface CarSectionMeta {
+    key: CarSectionKey
+    title: string
+    label: string
+    subtitle: string
+    badge: string
+    hasPickupFields: boolean
+}
+
+interface CarFormSection {
+    date: string
+    carModel: string
+    checkInCode: string
+    ticketImage: File | File[] | null
+    note: string
+}
 
 const props = defineProps({
     modelValue: {
@@ -146,7 +165,7 @@ const dialog = computed({
     set: (val) => emit('update:modelValue', val),
 })
 
-const sections = [
+const sections: CarSectionMeta[] = [
     {
         key: 'departure',
         title: 'OUTBOUND',
@@ -165,7 +184,7 @@ const sections = [
     },
 ]
 
-const form = reactive({
+const form = reactive<Record<CarSectionKey, CarFormSection>>({
     departure: {
         date: '',
         carModel: '',
@@ -176,6 +195,8 @@ const form = reactive({
     return: {
         date: '',
         carModel: '',
+        checkInCode: '',
+        ticketImage: null,
         note: '',
     },
 })

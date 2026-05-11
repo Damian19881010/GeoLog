@@ -144,8 +144,27 @@
     </v-dialog>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, reactive } from 'vue'
+
+type FlightSectionKey = 'departure' | 'return'
+
+interface FlightSectionMeta {
+    key: FlightSectionKey
+    title: string
+    label: string
+    subtitle: string
+    badge: string
+}
+
+interface FlightFormSection {
+    date: string
+    airline: string
+    checkInCode: string
+    flightNumber: string
+    ticketImage: File | File[] | null
+    note: string
+}
 
 const props = defineProps({
     modelValue: {
@@ -161,7 +180,7 @@ const dialog = computed({
     set: (val) => emit('update:modelValue', val),
 })
 
-const sections = [
+const sections: FlightSectionMeta[] = [
     {
         key: 'departure',
         title: 'OUTBOUND',
@@ -178,7 +197,7 @@ const sections = [
     },
 ]
 
-const form = reactive({
+const form = reactive<Record<FlightSectionKey, FlightFormSection>>({
     departure: {
         date: '',
         airline: '',
