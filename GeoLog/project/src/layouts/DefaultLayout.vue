@@ -1,5 +1,5 @@
 <template>
-
+<v-app class="bg-transparent">
   <AppHeader
     @toggle-search="searchOpen = !searchOpen"
     @toggle-menu="menuOpen = !menuOpen"/>
@@ -8,10 +8,11 @@
 
     <Menu v-model="menuOpen"/>
 
-    <v-main class="layout-main">
+    <v-main class="layout-main ">
       <router-view />
     </v-main>
   </v-layout>
+</v-app>
 </template>
 
 <script setup lang="ts">

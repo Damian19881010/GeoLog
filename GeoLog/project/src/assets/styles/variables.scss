@@ -150,12 +150,12 @@ $heights: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
   .centerpart {
     max-width: 1152px !important;
 
-    margin: 0 auto !important;
+    margin: 0px auto !important;
     backdrop-filter: blur(3px);
     background-color: #000e24a2 !important;
     border: 1px solid rgb(255, 102, 0) !important;
     color: rgb(255, 102, 0);
-    box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.705);
+    // box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.705);
     @include breakpoint(1440px) {
       max-width: 80% !important;
     }
@@ -446,7 +446,8 @@ $heights: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
   color: rgba(255, 179, 71, 0.85);
 }
 
-.v-overlay {
+// 只對 dialog 類型的 overlay 套用模糊背景，避免影響 v-select / v-menu 等下拉選單
+.v-overlay:has(.v-dialog) {
   background: rgba(0, 0, 0, 0.596) !important;
   backdrop-filter: blur(5px);
 }
