@@ -1,13 +1,17 @@
 <template>
-  <v-card class="book-toolbar d-flex align-center ga-3 " color="transparent" elevation="0">
+  <v-card class="book-toolbar d-flex align-center ga-3 px-3" color="transparent" elevation="0">
     <v-switch
       v-model="isEditMode"
-      label="Edit Mode / 編輯模式"
       color="orange-darken-3"
       class="text-orange font-weight-bold"
-      hide-details="auto"
-      prepend-icon="mdi-pencil"
-    />
+      hide-details="auto">
+      <template #prepend>
+        <v-icon>mdi-pencil</v-icon>
+      </template>
+      <template #label>
+        <span class="text-white2">{{ isEditMode ? '編輯模式' : '預覽模式' }}</span>
+      </template>
+    </v-switch>
     <v-spacer></v-spacer>
 
     <v-btn v-if="!isEditMode" size="small" color="orange21" prepend-icon="mdi-arrow-left" text="返回列表" @click="goToList" />

@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid>
+  <v-container fluid class="book-root">
 
     <section class="workspace">
       <WorkSpace v-model:tab="tab" v-model:is-edit-mode="isEditMode" :days="visibleJourneyTabs"
@@ -19,21 +19,16 @@
       </v-window>
     </section>
 
-
-
-
     <!-- <FlightTicket /> -->
     <!-- <CarInfo /> -->
-
-
 
     <EditTab
       v-model="editTabDialog"
       :current-day="currentJourneyDay"
       :day-count="visibleJourneyTabs.length"
       @add-day="addJourneyDay"
-      @update-day="updateJourneyDay"
-    />
+      @update-day="updateJourneyDay"/>
+
   </v-container>
 </template>
 
@@ -89,15 +84,20 @@ watch(visibleDayCount, count => {
 </script>
 
 <style scoped lang="scss">
+.book-root {
+  overflow-x: hidden;
+  height: 100vh;
+}
+
 .workspace {
   position: fixed;
   z-index: 900;
   width: 80%;
+  top: 140px;
   left: 0;
   right: 0;
   margin: 0 auto;
   padding-bottom: 12px;
-
 }
 
 .page {
@@ -108,8 +108,9 @@ watch(visibleDayCount, count => {
   top: 380px;
   left: 0;
   right: 0;
-  max-height: calc(100% - 250px);
-  overflow: auto;
+  max-height: calc(100% - 400px);
+  overflow-x: hidden;
+  overflow-y: auto;
   &::-webkit-scrollbar {
     width: 5px !important;
   }

@@ -76,48 +76,86 @@
   </v-card>
 
   <!-- 日程 -->
-  <v-card v-for="(item, index) in localItems" :key="item.id" class="pa-5  my-5 info-bord2" color="transparent" elevation="5">
-    <!-- 時間 -->
-    <div class="d-flex justify-space-between align-center">
-      <v-chip size="large" color="orange" prepend-icon="mdi-clock-outline">{{ item.time }}</v-chip>
-      <v-btn
-        v-if="props.isEditMode"
-        size="x-small"
-        variant="tonal"
-        color="orange"
-        icon="mdi-pencil"
-        @click="openEditDialog(index)"
-      ></v-btn>
-    </div>
-    <!-- 標題 -->
-    <p class=" font-weight-bold text-white2 py-2 text-h4">{{ item.title }}</p>
-    <!-- 地址 & 導航 -->
-    <div class="d-flex align-center">
-      <v-icon color="red">mdi-map-marker</v-icon>
-      <p class="text-body-medium text-blue-grey-lighten-4">{{ item.address }}</p>
-      <v-spacer></v-spacer>
-      <v-btn 
-        class="border border-opacity-100 border-red"
-        size="small"
-        variant="tonal" 
-        color="red" 
-        prepend-icon="mdi-navigation" 
-        text="導航"
-        @click="openGoogleMap(item.address)">
-      </v-btn>
-    </div>
-    <div v-if="item.tickets" class="mt-4">
-      <airTickets :ticket="getDisplayTicket(item.tickets)" />
-    </div>
-    <!-- 備註 -->
-    <div class="section-block mt-5" v-if="item.note" >
-      <p class="text-orange">Remark 備註</p>
-      <div class="remark border border-opacity-50 border-orange21 rounded-lg p-3 mt-2 pa-3">
-        <p class="text-white2">{{ item.note }}</p>
-      </div>
-    </div>
+  <v-timeline
+    truncate-line="end"
+    v-if="localItems.length"
+    side="end"
+    density="default"
+    line-color="rgba(255,140,0,0.35)"
+    class="journey-timeline mt-4">
+    <v-timeline-item
+      v-for="(item, index) in localItems"
+      :key="item.id"
+      dot-color="orange-darken-2"
+      icon="mdi-map-marker"
+      icon-color="white"
+      size="small">
+      <!-- 時間：顯示在軸線左側 -->
+      <template #opposite>
+        <v-chip
+          size="x-large"
+          color="orange-darken-1"
+          variant="tonal"
+          prepend-icon="mdi-clock-outline">
+          {{ item.time }}
+        </v-chip>
+      </template>
 
-  </v-card>
+      <!-- 卡片內容 -->
+      <v-card class="pa-4 info-bord2 mb-2 w-100" width="600" color="transparent" elevation="4">
+        <!-- 標題 + 編輯 -->
+        <div class="d-flex justify-space-between align-start mb-1">
+          <v-card-title class="text-white font-weight-bold">{{ item.title }}</v-card-title>
+          <v-btn
+            v-if="props.isEditMode"
+            size="x-small"
+            variant="tonal"
+            color="orange"
+            icon="mdi-pencil"
+            class="ml-2 flex-shrink-0"
+            @click="openEditDialog(index)"
+          ></v-btn>
+        </div>
+
+        <v-divider class="my-1" opacity="1" color="orange"></v-divider>  
+
+        <!-- 地址 & 導航 -->
+        <div class="d-flex align-center mt-3">
+          <v-icon color="red" size="large">mdi-map-marker</v-icon>
+          <span class="text-body-2 text-blue-grey-lighten-4 ml-1">{{ item.address }}</span>
+          <v-spacer></v-spacer>
+          <v-btn
+            class="border border-opacity-100 border-red"
+            size="small"
+            variant="tonal"
+            color="red"
+            @click="openGoogleMap(item.address)">
+            <template #default>
+              <p class="text-caption font-weight-bold text-white">導航</p>
+            </template>
+            <template #append>
+              <v-icon>mdi-navigation</v-icon>
+            </template>
+          </v-btn>
+        </div>
+
+        
+
+        <!-- 機票 -->
+        <div v-if="item.tickets" class="mt-4">
+          <airTickets :ticket="getDisplayTicket(item.tickets)" />
+        </div>
+
+        <!-- 備註 -->
+        <div v-if="item.note" class="mt-4">
+          <p class="text-orange text-body-2 mb-1">Remark 備註</p>
+          <div class="remark border border-opacity-50 border-orange21 rounded-lg pa-3">
+            <p class="text-white2 text-body-2 ma-0">{{ item.note }}</p>
+          </div>
+        </div>
+      </v-card>
+    </v-timeline-item>
+  </v-timeline>
 
   <!-- 編輯日程 -->
   <EditDate v-model="editDialog" :initial-data="editFormData" :mode="isCreatingItem ? 'create' : 'edit'" @save="saveItem" />
@@ -394,5 +432,17 @@ const getDisplayTicket = (tickets: JourneyTicketInput): FlightTicketDetail => {
 .info-bord2 {
     background-color: rgba(240, 255, 255, 0.096);
     border-radius: 24px;
+}
+
+// ── Timeline ──
+.journey-timeline {
+  :deep(.v-timeline-item__dot) {
+    box-shadow: 0 0 10px rgba(255, 140, 0, 0.4);
+  }
+}
+
+.timeline-time-chip {
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
 }
 </style>

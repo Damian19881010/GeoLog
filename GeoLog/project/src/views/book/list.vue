@@ -91,8 +91,7 @@
       :mode="dialogMode"
       :initial-data="editingTripFormData"
       @create="onTripCreated"
-      @update="onTripUpdated"
-    />
+      @update="onTripUpdated" />
   </v-container>
 </template>
 

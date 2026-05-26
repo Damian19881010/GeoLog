@@ -4,13 +4,27 @@
       <div class="header-wrap px-6 px-sm-8 pt-6">
         <div class="d-flex flex-column flex-md-row align-md-center justify-space-between ga-4">
           <div>
-            <p class="text-h5 font-weight-bold panel-title mb-1">頁籤與當日行程</p>
+            <p class="text-h5 font-weight-bold panel-title mb-1">編輯日程</p>
             <p class="panel-subtitle mb-0">DAY TAB AND SCHEDULE EDITOR</p>
           </div>
 
           <v-btn-toggle v-model="mode" mandatory divided class="mode-toggle">
-            <v-btn value="create" prepend-icon="mdi-plus">新增頁籤</v-btn>
-            <v-btn value="edit" prepend-icon="mdi-calendar-edit" :disabled="!currentDay">編輯目前 DAY</v-btn>
+            <v-btn value="create" variant="tonal" color="orange21">
+              <template #prepend>
+                <v-icon color="white">mdi-plus</v-icon>
+              </template>
+              <template #default>
+                <span class="text-white">新增日程</span>
+              </template>
+            </v-btn>
+            <v-btn value="edit" prepend-icon="mdi-calendar-edit" :disabled="!currentDay" variant="tonal" color="orange21">
+              <template #prepend>
+                <v-icon color="white">mdi-calendar-edit</v-icon>
+              </template>
+              <template #default>
+                <span class="text-white">編輯當前日程</span>
+              </template>
+            </v-btn>
           </v-btn-toggle>
         </div>
         <div class="glow-line mt-4"></div>
@@ -19,7 +33,7 @@
       <v-card-text class="px-6 px-sm-8 py-5">
         <div class="section-label mb-3">DAY INFO</div>
         <v-row dense>
-          <v-col cols="12" sm="4">
+          <v-col cols="12" sm="6">
             <v-text-field
               v-model="form.tabText"
               label="頁籤名稱"
@@ -31,7 +45,7 @@
               hide-details="auto"
             />
           </v-col>
-          <v-col cols="12" sm="4">
+          <v-col cols="12" sm="6">
             <v-text-field
               v-model="form.date"
               label="日期"
@@ -40,10 +54,16 @@
               density="compact"
               color="orange"
               base-color="orange"
-              hide-details="auto"
-            />
+              hide-details="auto">
+              <template #prepend-inner>
+                <v-icon color="white2">mdi-calendar</v-icon>
+              </template>
+              <template #append-inner>
+                <v-btn variant="text" color="orange21" density="compact" icon="mdi-calendar-plus"></v-btn>
+              </template>
+            </v-text-field>
           </v-col>
-          <v-col cols="12" sm="4">
+          <v-col cols="12" >
             <v-text-field
               v-model="form.title"
               label="當日標題"
@@ -418,6 +438,14 @@ watch(
 </script>
 
 <style scoped lang="scss">
+.edit-tab-dialog {
+  border-radius: 24px;
+  overflow: hidden;
+  background-color: rgb(20, 25, 45) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 173, 77, 0.35);
+}
+
 .tab-editor-panel {
   position: relative;
   border: 1px solid rgba(255, 173, 77, 0.22);
