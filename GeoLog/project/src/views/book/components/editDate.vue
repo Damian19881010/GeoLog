@@ -26,13 +26,11 @@
 
             <div class="d-flex flex-wrap ga-4">
               <div class="time-box">
-                <v-text-field v-model="form.startTime" label="起始時間" type="time" variant="outlined" density="comfortable"
-                  color="orange" base-color="orange" prepend-inner-icon="mdi-clock-start" hide-details="auto" />
+                <TimePicker v-model="form.startTime" label="起始時間" icon="mdi-clock-start" />
               </div>
 
               <div class="time-box">
-                <v-text-field v-model="form.endTime" label="結束時間" type="time" variant="outlined" density="comfortable"
-                  color="orange" base-color="orange" prepend-inner-icon="mdi-clock-end" hide-details="auto" />
+                <TimePicker v-model="form.endTime" label="結束時間" icon="mdi-clock-end" />
               </div>
             </div>
           </div>
@@ -120,6 +118,7 @@
 <script setup lang="ts">
 import { computed, reactive, watch } from 'vue'
 import airTickets from '@/components/flightInfo/ticket.vue'
+import TimePicker from '@/components/shared/timePicker.vue'
 import type {
   EditJourneyInitialData,
   JourneyTickets,

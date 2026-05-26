@@ -16,6 +16,8 @@ export interface JourneyTickets {
 
 export type JourneyTicketInput = JourneyTickets | true | null
 
+export type JourneyAccommodationInput = true | null
+
 export interface JourneyItem {
   id: string
   time: string
@@ -23,6 +25,7 @@ export interface JourneyItem {
   address: string
   note?: string | null
   tickets: JourneyTicketInput
+  accommodation?: JourneyAccommodationInput
 }
 
 export interface JourneyHeader {

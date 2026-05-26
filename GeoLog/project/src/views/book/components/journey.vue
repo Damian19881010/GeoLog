@@ -364,7 +364,7 @@ const openCreateDialog = (): void => {
 watch(
   () => props.addRequestKey,
   (requestKey, previousRequestKey) => {
-    if (!requestKey || requestKey === previousRequestKey) return
+    if (!requestKey || requestKey <= (previousRequestKey ?? 0)) return
 
     openCreateDialog()
   }

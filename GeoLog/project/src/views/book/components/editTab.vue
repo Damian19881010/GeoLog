@@ -22,7 +22,7 @@
                 <v-icon color="white">mdi-calendar-edit</v-icon>
               </template>
               <template #default>
-                <span class="text-white">編輯當前日程</span>
+                <span class="text-white">編輯當日所有行程</span>
               </template>
             </v-btn>
           </v-btn-toggle>
@@ -30,7 +30,8 @@
         <div class="glow-line mt-4"></div>
       </div>
 
-      <v-card-text class="px-6 px-sm-8 py-5">
+      <v-list class="bg-transparent">
+        <v-card-text class="px-6 px-sm-8 py-5">
         <div class="section-label mb-3">DAY INFO</div>
         <v-row dense>
           <v-col cols="12" sm="6">
@@ -47,19 +48,21 @@
           </v-col>
           <v-col cols="12" sm="6">
             <v-text-field
+              ref="dateFieldRef"
               v-model="form.date"
               label="日期"
               type="date"
               variant="outlined"
               density="compact"
               color="orange"
+              max-width="185"
               base-color="orange"
               hide-details="auto">
               <template #prepend-inner>
                 <v-icon color="white2">mdi-calendar</v-icon>
               </template>
               <template #append-inner>
-                <v-btn variant="text" color="orange21" density="compact" icon="mdi-calendar-plus"></v-btn>
+                <v-btn variant="text" color="orange21" density="compact" icon="mdi-plus" @click="openDatePicker"></v-btn>
               </template>
             </v-text-field>
           </v-col>
@@ -79,7 +82,7 @@
             <v-textarea
               v-model="form.rhythm"
               label="當日節奏"
-              rows="2"
+              rows="1"
               auto-grow
               variant="outlined"
               density="compact"
@@ -89,7 +92,7 @@
             />
           </v-col>
         </v-row>
-
+        <div class="glow-line  mt-8"></div>
         <div class="d-flex align-center mt-6 mb-3">
           <div>
             <div class="section-label">SCHEDULE</div>
@@ -113,12 +116,12 @@
 
         <div v-for="(item, index) in itemDrafts" :key="item.id" class="schedule-row pa-4 mb-3 rounded-lg">
           <div class="d-flex align-center mb-3">
-            <v-chip color="orange" size="small" label>{{ index + 1 }}</v-chip>
+            <v-chip color="yellow" label>行程{{ index + 1 }}</v-chip>
             <v-spacer />
             <v-btn
               icon="mdi-trash-can-outline"
               size="x-small"
-              color="error"
+              color="red"
               variant="tonal"
               aria-label="刪除行程項目"
               @click="removeItemDraft(index)"
@@ -150,7 +153,7 @@
                 hide-details="auto"
               />
             </v-col>
-            <v-col cols="12" sm="4">
+            <v-col cols="12" sm="8">
               <v-text-field
                 v-model="item.title"
                 label="標題"
@@ -158,10 +161,13 @@
                 density="compact"
                 color="orange"
                 base-color="orange"
-                hide-details="auto"
-              />
+                hide-details="auto">
+                <template #prepend-inner>
+                  <v-icon color="white2">mdi-format-text</v-icon>
+                </template>
+              </v-text-field>
             </v-col>
-            <v-col cols="12" sm="4">
+            <v-col cols="12" sm="12">
               <v-text-field
                 v-model="item.address"
                 label="地址"
@@ -169,26 +175,38 @@
                 density="compact"
                 color="orange"
                 base-color="orange"
-                hide-details="auto"
-              />
+                hide-details="auto">
+                <template #prepend-inner>
+                  <v-icon color="white2">mdi-map-marker</v-icon>
+                </template>
+              </v-text-field>
             </v-col>
-            <v-col cols="12" sm="8">
+            <v-col cols="12" sm="12">
               <v-textarea
                 v-model="item.note"
                 label="備註"
-                rows="2"
+                rows="1"
                 auto-grow
                 variant="outlined"
                 density="compact"
                 color="orange"
                 base-color="orange"
-                hide-details="auto"
-              />
+                hide-details="auto">
+                <template #prepend-inner>
+                  <v-icon color="white2">mdi-note-text</v-icon>
+                </template>
+              </v-textarea>
             </v-col>
-            <v-col cols="12" sm="4" class="d-flex align-center">
+            <v-col cols="12" class="d-flex align-center">
               <v-checkbox
                 v-model="item.hasTickets"
                 label="保留/加入機票資訊"
+                color="orange21"
+                hide-details="auto"
+              />
+              <v-checkbox
+                v-model="item.hasAccommodation"
+                label="保留/加入住宿資訊"
                 color="orange21"
                 hide-details="auto"
               />
@@ -196,6 +214,10 @@
           </v-row>
         </div>
       </v-card-text>
+      </v-list>
+
+
+
 
       <div class="px-6 px-sm-8 pb-6">
         <div class="glow-line mb-4"></div>
@@ -214,7 +236,7 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
-import type { JourneyDay, JourneyItem, JourneyTicketInput } from '../types'
+import type { JourneyDay, JourneyItem, JourneyTicketInput, JourneyAccommodationInput } from '../types'
 
 type DialogMode = 'create' | 'edit'
 
@@ -226,7 +248,9 @@ type ItemDraft = {
   address: string
   note: string
   hasTickets: boolean
+  hasAccommodation: boolean
   tickets: JourneyTicketInput
+  accommodation: JourneyAccommodationInput
 }
 
 const props = withDefaults(defineProps<{
@@ -251,6 +275,7 @@ const dialog = computed({
 })
 
 const mode = ref<DialogMode>('create')
+const dateFieldRef = ref<InstanceType<typeof import('vuetify/components').VTextField> | null>(null)
 const itemDrafts = ref<ItemDraft[]>([])
 const form = reactive({
   id: '',
@@ -259,6 +284,11 @@ const form = reactive({
   title: '',
   rhythm: '',
 })
+
+const openDatePicker = () => {
+  const input = dateFieldRef.value?.$el?.querySelector('input[type="date"]') as HTMLInputElement | null
+  input?.showPicker()
+}
 
 const canSave = computed(() =>
   form.date.trim() !== '' &&
@@ -297,7 +327,9 @@ const createEmptyItemDraft = (): ItemDraft => ({
   address: '',
   note: '',
   hasTickets: false,
+  hasAccommodation: false,
   tickets: null,
+  accommodation: null,
 })
 
 const toItemDraft = (item: JourneyItem): ItemDraft => {
@@ -311,7 +343,9 @@ const toItemDraft = (item: JourneyItem): ItemDraft => {
     address: item.address ?? '',
     note: item.note ?? '',
     hasTickets: Boolean(item.tickets),
+    hasAccommodation: Boolean(item.accommodation),
     tickets: item.tickets ?? null,
+    accommodation: item.accommodation ?? null,
   }
 }
 
@@ -365,7 +399,8 @@ const draftHasContent = (draft: ItemDraft) =>
   draft.title.trim() !== '' ||
   draft.address.trim() !== '' ||
   draft.note.trim() !== '' ||
-  draft.hasTickets
+  draft.hasTickets ||
+  draft.hasAccommodation
 
 const toJourneyItem = (draft: ItemDraft): JourneyItem => {
   const startTime = draft.startTime.trim()
@@ -379,6 +414,7 @@ const toJourneyItem = (draft: ItemDraft): JourneyItem => {
     address: draft.address.trim(),
     note: draft.note.trim() || null,
     tickets: draft.hasTickets ? draft.tickets || true : null,
+    accommodation: draft.hasAccommodation ? draft.accommodation || true : null,
   }
 }
 
@@ -438,14 +474,20 @@ watch(
 </script>
 
 <style scoped lang="scss">
+/* ===== Dialog Overlay (背景模糊) ===== */
+:deep(.v-overlay__scrim) {
+  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.55) !important;
+}
+
+/* ===== Dialog Container ===== */
 .edit-tab-dialog {
   border-radius: 24px;
   overflow: hidden;
-  background-color: rgb(20, 25, 45) !important;
-  backdrop-filter: blur(8px) !important;
   border: 1px solid rgba(255, 173, 77, 0.35);
 }
 
+/* ===== Card Panel ===== */
 .tab-editor-panel {
   position: relative;
   border: 1px solid rgba(255, 173, 77, 0.22);
@@ -453,6 +495,7 @@ watch(
   color: rgba(255, 255, 255, 0.92);
 }
 
+/* ===== Typography ===== */
 .panel-title {
   color: #ffb347;
   letter-spacing: 1px;
@@ -472,6 +515,7 @@ watch(
   letter-spacing: 1.4px;
 }
 
+/* ===== Decorative ===== */
 .glow-line {
   height: 1px;
   width: 100%;
@@ -479,6 +523,7 @@ watch(
   box-shadow: 0 0 12px rgba(255, 145, 0, 0.16);
 }
 
+/* ===== Components ===== */
 .mode-toggle {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -490,6 +535,7 @@ watch(
   background: rgba(255, 255, 255, 0.045);
 }
 
+/* ===== Buttons ===== */
 .btn-cancel {
   background: rgba(255, 255, 255, 0.08) !important;
   color: rgba(255, 255, 255, 0.86) !important;

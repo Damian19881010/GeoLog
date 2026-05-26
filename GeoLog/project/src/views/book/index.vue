@@ -81,6 +81,10 @@ watch(visibleDayCount, count => {
 
   if (tab.value > count) tab.value = count
 })
+
+watch(tab, () => {
+  addJourneyRequestKey.value = 0
+})
 </script>
 
 <style scoped lang="scss">
