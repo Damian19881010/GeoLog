@@ -1,61 +1,17 @@
 <template>
+
   <v-card class="book-workspace" color="transparent"  elevation="0">
     <EditMode
       v-model="editMode"
       :length="props.days.length"
-      @open-edit-tab="emit('open-edit-tab')"/>
+      @open-edit-tab="emit('open-edit-tab')"
+      @add-journey="emit('add-journey')"/>
 
     <v-card class="top pa-5 border mt-4 rounded-lg"  elevation="5">
-      <div v-if="!isTitleEditing">
-        <div class="d-flex justify-space-between align-center ga-2">
-          <p class="text-h3 font-weight-bold text-white2 ma-0">{{ tripTitle }}</p>
-          <v-spacer />
-          <v-btn
-            v-if="editMode"
-            size="x-small"
-            icon="mdi-cog-outline"
-            aria-label="編輯旅程標題"
-            @click="isTitleEditing = true"
-          />
-        </div>
+      <div >
+        <p class="text-h3 font-weight-bold text-white2 ma-0">{{ tripTitle }}</p>
 
         <p class="text-white2 ma-0">{{ tripVersion }}</p>
-      </div>
-
-      <div v-else>
-        <div class="mb-2 d-flex justify-space-between align-center ga-2">
-          <v-spacer />
-          <v-btn
-            size="x-small"
-            class="text-white"
-            color="orange"
-            icon="mdi-content-save"
-            aria-label="儲存旅程標題"
-            @click="isTitleEditing = false"
-          />
-        </div>
-
-        <v-text-field
-          v-model="tripTitle"
-          label="標題"
-          class="text-orange"
-          variant="outlined"
-          color="orange"
-          hide-details="auto"
-          density="compact"
-          base-color="orange"
-        />
-        <v-text-field
-          v-model="tripVersion"
-          class="mt-2 text-orange"
-          label="版本"
-          placeholder="請輸入版本"
-          variant="outlined"
-          color="orange"
-          hide-details="auto"
-          density="compact"
-          base-color="orange"
-        />
       </div>
     </v-card>
 
@@ -73,6 +29,7 @@
       <v-divider color="orange-darken-4" opacity="1" />
     </v-card>
   </v-card>
+
 </template>
 
 <script setup lang="ts">
@@ -90,10 +47,11 @@ const emit = defineEmits<{
   (e: 'update:tab', value: number): void
   (e: 'update:isEditMode', value: boolean): void
   (e: 'open-edit-tab'): void
+  (e: 'add-journey'): void
 }>()
 
 const isTitleEditing = ref(false)
-const tripTitle = ref('Okinawa')
+const tripTitle = ref('沖繩5天4夜自由行-範例')
 const tripVersion = ref('ver 3.0')
 
 const currentTab = computed({
@@ -127,4 +85,3 @@ watch(editMode, value => {
     border-radius: 16px;
 }
 </style>
-

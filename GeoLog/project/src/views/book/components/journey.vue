@@ -120,7 +120,7 @@
   </v-card>
 
   <!-- 編輯日程 -->
-  <EditDate v-model="editDialog" :initial-data="editFormData" @save="saveItem" />
+  <EditDate v-model="editDialog" :initial-data="editFormData" :mode="isCreatingItem ? 'create' : 'edit'" @save="saveItem" />
 
 
 
@@ -180,8 +180,10 @@ const normalizeTickets = (tickets: JourneyTicketInput | undefined): JourneyTicke
 const props = withDefaults(defineProps<{
   day: JourneyDay
   isEditMode?: boolean
+  addRequestKey?: number
 }>(), {
   isEditMode: false,
+  addRequestKey: 0,
 })
 
 const localItems = ref<JourneyItem[]>([])
@@ -192,6 +194,7 @@ const headerDraft = ref({ title: '', rhythm: '' })
 
 const editDialog = ref(false)
 const editingIndex = ref(-1)
+const isCreatingItem = ref(false)
 
 const parseTimeRange = (time = ''): { startTime: string; endTime: string } => {
   const [startTime = '', endTime = ''] = String(time).split(' - ')
@@ -205,7 +208,7 @@ const parseTimeRange = (time = ''): { startTime: string; endTime: string } => {
 const editFormData = computed<EditJourneyInitialData>(() => {
   const item = localItems.value[editingIndex.value]
 
-  if (!item) {
+  if (isCreatingItem.value || !item) {
     return {
       startTime: '',
       endTime: '',
@@ -259,18 +262,40 @@ const openEditDialog = (index: number): void => {
   if (!props.isEditMode) return
 
   editingIndex.value = index
+  isCreatingItem.value = false
   editDialog.value = true
 }
 
 const saveItem = (payload: EditJourneyInitialData): void => {
   const index = editingIndex.value
-  if (index < 0) return
-  const currentItem = localItems.value[index]
-  if (!currentItem) return
-
   const startTime = payload.startTime?.trim() ?? ''
   const endTime = payload.endTime?.trim() ?? ''
   const time = startTime && endTime ? `${startTime} - ${endTime}` : startTime || endTime
+
+  if (isCreatingItem.value) {
+    const nextItem: JourneyItem = {
+      id: `${props.day.id}-${Date.now()}`,
+      time,
+      title: payload.title,
+      address: payload.address,
+      note: payload.note,
+      tickets: normalizeTickets(payload.tickets),
+    }
+
+    localItems.value.push(nextItem)
+
+    if (Array.isArray(props.day?.items)) {
+      props.day.items.push({ ...nextItem })
+    }
+
+    isCreatingItem.value = false
+    editingIndex.value = -1
+    return
+  }
+
+  if (index < 0) return
+  const currentItem = localItems.value[index]
+  if (!currentItem) return
 
   const updatedItem: JourneyItem = {
     ...currentItem,
@@ -289,6 +314,30 @@ const saveItem = (payload: EditJourneyInitialData): void => {
 
   editingIndex.value = -1
 }
+
+const openCreateDialog = (): void => {
+  if (!props.isEditMode) return
+
+  editingIndex.value = -1
+  isCreatingItem.value = true
+  editDialog.value = true
+}
+
+watch(
+  () => props.addRequestKey,
+  (requestKey, previousRequestKey) => {
+    if (!requestKey || requestKey === previousRequestKey) return
+
+    openCreateDialog()
+  }
+)
+
+watch(editDialog, (open) => {
+  if (open) return
+
+  isCreatingItem.value = false
+  editingIndex.value = -1
+})
 
 const saveHeader = () => {
   if (!props.isEditMode) return

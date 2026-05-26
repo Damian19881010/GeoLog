@@ -12,8 +12,8 @@
       <!-- 標題 -->
       <div class="header-wrap px-6 px-sm-8 pt-6 pt-sm-8">
         <div class="title-wrap">
-          <p class="text-h4 font-weight-bold panel-title mb-1">日程編輯</p>
-          <p class="panel-subtitle mb-0">SCHEDULE EDITOR</p>
+          <p class="text-h4 font-weight-bold panel-title mb-1">{{ dialogTitle }}</p>
+          <p class="panel-subtitle mb-0">{{ dialogSubtitle }}</p>
         </div>
         <div class="glow-line mt-4"></div>
       </div>
@@ -108,7 +108,7 @@
           </v-btn>
 
           <v-btn class="btn-save" variant="flat" min-width="110" @click="handleSave">
-            儲存
+            {{ submitLabel }}
           </v-btn>
         </v-card-actions>
       </div>
@@ -166,8 +166,10 @@ const normalizeTickets = (tickets: JourneyTickets | null | undefined): JourneyTi
 const props = withDefaults(defineProps<{
   modelValue?: boolean
   initialData?: EditJourneyInitialData
+  mode?: 'create' | 'edit'
 }>(), {
   modelValue: false,
+  mode: 'edit',
   initialData: () => ({
     startTime: '',
     endTime: '',
@@ -187,6 +189,10 @@ const dialogModel = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value),
 })
+
+const dialogTitle = computed(() => props.mode === 'create' ? '新增日程' : '日程編輯')
+const dialogSubtitle = computed(() => props.mode === 'create' ? 'NEW SCHEDULE' : 'SCHEDULE EDITOR')
+const submitLabel = computed(() => props.mode === 'create' ? '新增' : '儲存')
 
 const form = reactive({
   startTime: '',

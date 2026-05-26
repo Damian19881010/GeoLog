@@ -26,8 +26,9 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at top left, rgba(255, 140, 0, 0.24), transparent 35%),
-    radial-gradient(circle at bottom right, rgba(0, 153, 255, 0.2), transparent 30%),
+    radial-gradient(ellipse at top left, rgba(255, 140, 0, 0.22), transparent 40%),
+    radial-gradient(ellipse at bottom right, rgba(0, 153, 255, 0.18), transparent 35%),
+    radial-gradient(ellipse at center, rgba(80, 0, 120, 0.12), transparent 60%),
     linear-gradient(160deg, #050816 0%, #0a1530 55%, #091b2c 100%);
 }
 
@@ -37,10 +38,10 @@
   place-items: center;
   position: relative;
   z-index: 1;
-  padding: 24px;
+  padding: 32px 24px;
 }
 
 .public-layout__content {
-  width: min(100%, 440px);
+  width: min(100%, 520px);
 }
 </style>

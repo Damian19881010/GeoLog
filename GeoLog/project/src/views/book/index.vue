@@ -3,13 +3,18 @@
 
     <section class="workspace">
       <WorkSpace v-model:tab="tab" v-model:is-edit-mode="isEditMode" :days="visibleJourneyTabs"
-        @open-edit-tab="editTabDialog = true" />
+        @open-edit-tab="editTabDialog = true"
+        @add-journey="requestAddJourney" />
     </section>
 
     <section class="page">
       <v-window v-model="tab" class="date">
         <v-window-item v-for="(day, idx) in visibleJourneyTabs" :key="day.id" :value="idx + 1">
-          <Journey :day="day" :is-edit-mode="isEditMode" />
+          <Journey
+            :day="day"
+            :is-edit-mode="isEditMode"
+            :add-request-key="tab === idx + 1 ? addJourneyRequestKey : 0"
+          />
         </v-window-item>
       </v-window>
     </section>
@@ -22,7 +27,13 @@
 
 
 
-    <EditTab v-model="editTabDialog" />
+    <EditTab
+      v-model="editTabDialog"
+      :current-day="currentJourneyDay"
+      :day-count="visibleJourneyTabs.length"
+      @add-day="addJourneyDay"
+      @update-day="updateJourneyDay"
+    />
   </v-container>
 </template>
 
@@ -34,13 +45,38 @@ import EditTab from './components/editTab.vue'
 import Journey from './components/journey.vue'
 import WorkSpace from './components/workSpace.vue'
 import { journeyTabs } from './mockJourneyData'
+import type { JourneyDay } from './types'
 
-const visibleDayCount = ref(journeyTabs.length)
+const cloneJourneyDays = (days: JourneyDay[]) => JSON.parse(JSON.stringify(days)) as JourneyDay[]
+
+const journeyDays = ref<JourneyDay[]>(cloneJourneyDays(journeyTabs))
+const visibleDayCount = ref(journeyDays.value.length)
 const tab = ref(1)
 const isEditMode = ref(false)
 const editTabDialog = ref(false)
+const addJourneyRequestKey = ref(0)
 
-const visibleJourneyTabs = computed(() => journeyTabs.slice(0, visibleDayCount.value))
+const visibleJourneyTabs = computed(() => journeyDays.value.slice(0, visibleDayCount.value))
+const currentJourneyDay = computed(() => visibleJourneyTabs.value[tab.value - 1] ?? null)
+
+const requestAddJourney = () => {
+  if (!isEditMode.value || visibleJourneyTabs.value.length === 0) return
+
+  addJourneyRequestKey.value += 1
+}
+
+const addJourneyDay = (day: JourneyDay) => {
+  journeyDays.value.push(day)
+  visibleDayCount.value = journeyDays.value.length
+  tab.value = journeyDays.value.length
+}
+
+const updateJourneyDay = (day: JourneyDay) => {
+  const index = journeyDays.value.findIndex((item) => item.id === day.id)
+  if (index === -1) return
+
+  journeyDays.value.splice(index, 1, day)
+}
 
 watch(visibleDayCount, count => {
   if (count < 1) {

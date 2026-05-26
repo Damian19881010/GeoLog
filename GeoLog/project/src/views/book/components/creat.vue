@@ -4,7 +4,7 @@
       <v-toolbar color="transparent" density="compact">
         <v-toolbar-title class="panel-title text-h6 font-weight-bold">
           <v-icon class="mr-2" color="orange">mdi-map-marker-plus</v-icon>
-          新增行程
+          {{ dialogTitle }}
         </v-toolbar-title>
         <template #append>
           <v-btn icon="mdi-close" variant="text" color="white" @click="dialog = false" />
@@ -167,7 +167,7 @@
           @click="handleCreate"
         >
           <v-icon class="mr-1">mdi-check</v-icon>
-          建立行程
+          {{ submitLabel }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -189,13 +189,19 @@ export interface TripFormData {
 
 type TripFormState = Omit<TripFormData, 'imagePreviewUrl'>
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   modelValue: boolean
-}>()
+  mode?: 'create' | 'edit'
+  initialData?: TripFormData | null
+}>(), {
+  mode: 'create',
+  initialData: null,
+})
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
   (e: 'create', data: TripFormData): void
+  (e: 'update', data: TripFormData): void
 }>()
 
 const dialog = computed({
@@ -204,7 +210,19 @@ const dialog = computed({
 })
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24
-const countryOptions = ['日本', '台灣', '韓國', '泰國', '美國', '英國', '法國', '德國', '澳洲']
+const dialogTitle = computed(() => props.mode === 'edit' ? '編輯行程' : '新增行程')
+const submitLabel = computed(() => props.mode === 'edit' ? '儲存修改' : '建立行程')
+const countryOptions = [
+  { title: '日本', value: 'Japan' },
+  { title: '台灣', value: 'Taiwan' },
+  { title: '韓國', value: 'South Korea' },
+  { title: '泰國', value: 'Thailand' },
+  { title: '美國', value: 'United States' },
+  { title: '英國', value: 'United Kingdom' },
+  { title: '法國', value: 'France' },
+  { title: '德國', value: 'Germany' },
+  { title: '澳洲', value: 'Australia' },
+]
 
 const form = ref<TripFormState>(createEmptyForm())
 const imagePreview = ref<string | null>(null)
@@ -224,6 +242,17 @@ function createEmptyForm(): TripFormState {
     endDate: '',
     country: '',
     imageFile: [],
+  }
+}
+
+function createFormFromData(data: TripFormData): TripFormState {
+  return {
+    city: data.city,
+    name: data.name,
+    startDate: data.startDate,
+    endDate: data.endDate,
+    country: data.country,
+    imageFile: data.imageFile ?? [],
   }
 }
 
@@ -294,11 +323,23 @@ const resetForm = () => {
   isSubmitting.value = false
 }
 
+const syncFormFromProps = () => {
+  if (props.initialData) {
+    form.value = createFormFromData(props.initialData)
+    imagePreview.value = props.initialData.imagePreviewUrl
+  } else {
+    form.value = createEmptyForm()
+    imagePreview.value = null
+  }
+
+  isSubmitting.value = false
+}
+
 const handleCreate = () => {
   if (!isFormValid.value || isSubmitting.value) return
   isSubmitting.value = true
 
-  emit('create', {
+  const payload: TripFormData = {
     name: form.value.name.trim(),
     city: form.value.city.trim(),
     startDate: form.value.startDate,
@@ -306,13 +347,31 @@ const handleCreate = () => {
     country: form.value.country,
     imageFile: form.value.imageFile,
     imagePreviewUrl: imagePreview.value,
-  })
+  }
+
+  if (props.mode === 'edit') {
+    emit('update', payload)
+  } else {
+    emit('create', payload)
+  }
 
   dialog.value = false
 }
 
-watch(dialog, (open) => {
-  if (!open) resetForm()
+watch(
+  () => props.modelValue,
+  (open) => {
+    if (open) {
+      syncFormFromProps()
+      return
+    }
+
+    resetForm()
+  }
+)
+
+watch(() => props.initialData, () => {
+  if (props.modelValue) syncFormFromProps()
 })
 </script>
 

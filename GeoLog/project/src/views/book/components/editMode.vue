@@ -21,7 +21,15 @@
       variant="tonal"
       @click="emit('open-edit-tab')"
     />
-    <v-btn v-if="isEditMode" size="small" color="orange21" prepend-icon="mdi-plus" text="新增行程" />
+    <v-btn
+      v-if="isEditMode"
+      :disabled="!length"
+      size="small"
+      color="orange21"
+      prepend-icon="mdi-plus"
+      text="新增行程"
+      @click="emit('add-journey')"
+    />
   </v-card>
 </template>
 
@@ -42,6 +50,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
   (e: 'open-edit-tab'): void
+  (e: 'add-journey'): void
 }>()
 
 const isEditMode = computed({

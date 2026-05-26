@@ -15,7 +15,7 @@
         <div class="d-flex ga-3">
           <!-- <v-btn class="border border-opacity-100 border-orange21" size="small" variant="text" color="orange21" icon="mdi-magnify"  @click="emit('toggle-search')" /> -->
           <v-btn class="border border-opacity-100 border-orange21" size="small" variant="tonal" color="white" icon="mdi-cog-outline"></v-btn>
-          <v-btn class="border border-opacity-100 border-orange21" size="small" variant="tonal" color="orange21" icon="mdi-bell"></v-btn>
+          <v-btn class="border border-opacity-100 border-orange21" size="small" variant="tonal" color="yellow" icon="mdi-bell"></v-btn>
           <v-btn class="border border-opacity-100 border-orange21" size="small" variant="tonal" color="orange21" icon="mdi-account"></v-btn>
         </div>
       </template>
