@@ -24,6 +24,7 @@
 
     <EditTab
       v-model="editTabDialog"
+      :days="visibleJourneyTabs"
       :current-day="currentJourneyDay"
       :day-count="visibleJourneyTabs.length"
       @add-day="addJourneyDay"

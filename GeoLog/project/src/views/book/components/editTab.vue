@@ -36,9 +36,23 @@
         <v-row dense>
           <v-col cols="12" sm="6">
             <v-text-field
+              v-if="mode === 'create'"
               v-model="form.tabText"
-              label="頁籤名稱"
+              label="名稱"
               placeholder="DAY 3"
+              variant="outlined"
+              density="compact"
+              color="orange"
+              base-color="orange"
+              hide-details="auto"
+            />
+            <v-select
+              v-else
+              v-model="selectedDayId"
+              :items="daySelectItems"
+              item-title="text"
+              item-value="id"
+              label="選擇日程"
               variant="outlined"
               density="compact"
               color="orange"
@@ -47,24 +61,7 @@
             />
           </v-col>
           <v-col cols="12" sm="6">
-            <v-text-field
-              ref="dateFieldRef"
-              v-model="form.date"
-              label="日期"
-              type="date"
-              variant="outlined"
-              density="compact"
-              color="orange"
-              max-width="185"
-              base-color="orange"
-              hide-details="auto">
-              <template #prepend-inner>
-                <v-icon color="white2">mdi-calendar</v-icon>
-              </template>
-              <template #append-inner>
-                <v-btn variant="text" color="orange21" density="compact" icon="mdi-plus" @click="openDatePicker"></v-btn>
-              </template>
-            </v-text-field>
+            <DatePicker v-model="form.date" label="日期" max-width="185" />
           </v-col>
           <v-col cols="12" >
             <v-text-field
@@ -129,30 +126,11 @@
           </div>
 
           <v-row dense>
-            <v-col cols="6" sm="2">
-              <v-text-field
-                v-model="item.startTime"
-                label="開始"
-                type="time"
-                variant="outlined"
-                density="compact"
-                color="orange"
-                base-color="orange"
-                hide-details="auto"
-              />
+            <v-col cols="6" sm="6" class="d-flex ga-2">
+              <TimePicker v-model="item.startTime" label="開始" icon="mdi-clock-start" density="compact" max-width="170" />
+              <TimePicker v-model="item.endTime" label="結束" icon="mdi-clock-end" density="compact" max-width="170" />
             </v-col>
-            <v-col cols="6" sm="2">
-              <v-text-field
-                v-model="item.endTime"
-                label="結束"
-                type="time"
-                variant="outlined"
-                density="compact"
-                color="orange"
-                base-color="orange"
-                hide-details="auto"
-              />
-            </v-col>
+
             <v-col cols="12" sm="8">
               <v-text-field
                 v-model="item.title"
@@ -236,6 +214,8 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
+import TimePicker from '@/components/shared/timePicker.vue'
+import DatePicker from '@/components/shared/datePicker.vue'
 import type { JourneyDay, JourneyItem, JourneyTicketInput, JourneyAccommodationInput } from '../types'
 
 type DialogMode = 'create' | 'edit'
@@ -255,10 +235,12 @@ type ItemDraft = {
 
 const props = withDefaults(defineProps<{
   modelValue?: boolean
+  days?: JourneyDay[]
   currentDay?: JourneyDay | null
   dayCount?: number
 }>(), {
   modelValue: false,
+  days: () => [],
   currentDay: null,
   dayCount: 0,
 })
@@ -275,7 +257,7 @@ const dialog = computed({
 })
 
 const mode = ref<DialogMode>('create')
-const dateFieldRef = ref<InstanceType<typeof import('vuetify/components').VTextField> | null>(null)
+const selectedDayId = ref('')
 const itemDrafts = ref<ItemDraft[]>([])
 const form = reactive({
   id: '',
@@ -285,10 +267,9 @@ const form = reactive({
   rhythm: '',
 })
 
-const openDatePicker = () => {
-  const input = dateFieldRef.value?.$el?.querySelector('input[type="date"]') as HTMLInputElement | null
-  input?.showPicker()
-}
+const daySelectItems = computed(() =>
+  props.days.map(day => ({ id: day.id, text: `${day.tabText}（${day.date}）` }))
+)
 
 const canSave = computed(() =>
   form.date.trim() !== '' &&
@@ -364,10 +345,11 @@ const resetForEdit = () => {
   const day = props.currentDay
 
   if (!day) {
-    resetForCreate()
+    selectedDayId.value = props.days[0]?.id ?? ''
     return
   }
 
+  selectedDayId.value = day.id
   form.id = day.id
   form.date = day.date
   form.tabText = day.tabText
@@ -457,12 +439,26 @@ watch(
 
 watch(mode, () => {
   if (!props.modelValue) return
-  if (mode.value === 'edit' && !props.currentDay) {
+  if (mode.value === 'edit' && props.days.length === 0) {
     mode.value = 'create'
     return
   }
 
   resetForm()
+})
+
+watch(selectedDayId, (id) => {
+  if (mode.value !== 'edit' || !id) return
+
+  const day = props.days.find(d => d.id === id)
+  if (!day) return
+
+  form.id = day.id
+  form.date = day.date
+  form.tabText = day.tabText
+  form.title = day.header?.title ?? ''
+  form.rhythm = day.header?.rhythm ?? ''
+  itemDrafts.value = day.items.map(toItemDraft)
 })
 
 watch(

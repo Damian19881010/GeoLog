@@ -21,7 +21,7 @@
       size="small"
       color="orange"
       prepend-icon="mdi-cog-outline"
-      text="編輯頁籤"
+      text="編輯日程"
       variant="tonal"
       @click="emit('open-edit-tab')"
     />

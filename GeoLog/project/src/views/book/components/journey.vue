@@ -78,13 +78,13 @@
   <!-- 日程 -->
   <v-timeline
     truncate-line="end"
-    v-if="localItems.length"
+    v-if="sortedItems.length"
     side="end"
     density="default"
     line-color="rgba(255,140,0,0.35)"
     class="journey-timeline mt-4">
     <v-timeline-item
-      v-for="(item, index) in localItems"
+      v-for="(item, index) in sortedItems"
       :key="item.id"
       dot-color="orange-darken-2"
       icon="mdi-map-marker"
@@ -226,6 +226,9 @@ const props = withDefaults(defineProps<{
 
 const localItems = ref<JourneyItem[]>([])
 
+const sortedItems = computed(() =>
+  [...localItems.value].sort((a, b) => a.time.localeCompare(b.time))
+)
 const showHeader = ref(true)
 const isHeaderEditing = ref(false)
 const headerDraft = ref({ title: '', rhythm: '' })
