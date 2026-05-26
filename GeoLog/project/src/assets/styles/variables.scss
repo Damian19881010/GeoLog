@@ -11,7 +11,7 @@
 
 
 * {
-  font-family: "微軟正黑體";
+  font-family: 'Noto Sans TC', '微軟正黑體', sans-serif;
 }
 
 /* 【 設置RWD 】*/
@@ -75,26 +75,27 @@ p {
   transition: all 0.3s ease;
 
   &:hover {
-    width: 10px;
+    width: 5px;
     transition: all 0.3s ease;
+    background-color: #000129 !important;
   }
 }
 
 // 2.軌道背景底色
 ::-webkit-scrollbar-track {
-  background: #a7000010;
+  background: #a7000010 !important;
 
 }
 
 // 3.滑桿顏色
 ::-webkit-scrollbar-thumb {
-  background: #b1b1b1;
+  background: #b1b1b1 !important;
   border-radius: 50px;
 }
 
 // 4.滑桿滑鼠滑入時的顏色
 ::-webkit-scrollbar-thumb:hover {
-  background: #b34700;
+  background: #b34700 !important;
 
 }
 
@@ -129,26 +130,36 @@ $heights: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
 
 .app {
   min-height: 100vh;
+  // background-color: #000000 !important;
   background: linear-gradient(180deg, #000129 0%, #03002e 5%, #000607 100%) !important;
+  // background: linear-gradient(180deg, #002261 0%, #0f0047 50%, #0f004770 75%, #00072c50 100%);
+  
 }
 
 
 
 .header {
-  
+  // position: sticky;
   position: fixed;
+  top: 0px;
   z-index: 999 !important;
-  left: 50%;
-  transform: translateX(-50%);
-  top: 15px;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  background: linear-gradient(0deg, rgba(17, 22, 45, 0) 0%, rgba(0, 0, 0, 0.94) 100%) !important;
+  padding: 40px 0 0;
 
   .centerpart {
-    max-width: 60% !important;
-    margin: 0 auto !important;
+    max-width: 1152px !important;
+
+    margin: 0px auto !important;
     backdrop-filter: blur(3px);
     background-color: #000e24a2 !important;
     border: 1px solid rgb(255, 102, 0) !important;
     color: rgb(255, 102, 0);
+    // box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.705);
+    @include breakpoint(1440px) {
+      max-width: 80% !important;
+    }
   }
 
   .bottompart {
@@ -167,11 +178,12 @@ $heights: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
 
   @include breakpoint(600px) {
     min-height: 64px !important;
-    position: fixed;
+    position: sticky;
+    top: 16px;
     z-index: 999 !important;
     width: 95% !important;
-    left: 50%;
-    transform: translateX(-50%);
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .title {
@@ -435,12 +447,25 @@ $heights: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
   color: rgba(255, 179, 71, 0.85);
 }
 
-.v-overlay {
+// 只對 dialog 類型的 overlay 套用模糊背景，避免影響 v-select / v-menu 等下拉選單
+.v-overlay:has(.v-dialog) {
   background: rgba(0, 0, 0, 0.596) !important;
   backdrop-filter: blur(5px);
 }
 
 .remark {
   background-color: #ff7b0021;
-
 }
+
+
+
+.addflight,
+.addcar {
+    width: 100%;
+    position: relative;
+    z-index: 1;
+    background-color: rgba(250, 235, 215, 0.13);
+    border: 1px solid rgba(250, 235, 215, 0.3);
+    border-radius: 16px;
+}
+

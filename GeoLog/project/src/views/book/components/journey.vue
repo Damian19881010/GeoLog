@@ -1,6 +1,6 @@
 <template>
   <!-- 標頭 前言-->
-  <v-card v-if="showHeader" class="pa-5  info-bord1" color="transparent" elevation="5">
+  <v-card v-if="showHeader" class="pa-5 mt-5  info-bord1" color="transparent" elevation="5">
     <!-- 預覽模式 -->
 
     <template v-if="!isHeaderEditing">
@@ -76,73 +76,155 @@
   </v-card>
 
   <!-- 日程 -->
-  <v-card v-for="(item, index) in localItems" :key="item.id" class="pa-5  my-5 info-bord2" color="transparent" elevation="5">
-    <!-- 時間 -->
-    <div class="d-flex justify-space-between align-center">
-      <v-chip size="large" color="orange" prepend-icon="mdi-clock-outline">{{ item.time }}</v-chip>
-      <v-btn
-        v-if="props.isEditMode"
-        size="x-small"
-        variant="tonal"
-        color="orange"
-        icon="mdi-pencil"
-        @click="openEditDialog(index)"
-      ></v-btn>
-    </div>
-    <!-- 標題 -->
-    <p class=" font-weight-bold text-white2 py-2 text-h4">{{ item.title }}</p>
-    <!-- 地址 & 導航 -->
-    <div class="d-flex align-center">
-      <v-icon color="red">mdi-map-marker</v-icon>
-      <p class="text-body-medium text-blue-grey-lighten-4">{{ item.address }}</p>
-      <v-spacer></v-spacer>
-      <v-btn 
-        class="border border-opacity-100 border-red"
-        size="small"
-        variant="tonal" 
-        color="red" 
-        prepend-icon="mdi-navigation" 
-        text="導航"
-        @click="openGoogleMap(item.address)">
-      </v-btn>
-    </div>
-    <div v-if="item.tickets" class="mt-4">
-      <airTickets />
-    </div>
-    <!-- 備註 -->
-    <div class="section-block mt-5" v-if="item.note" >
-      <p class="text-orange">Remark 備註</p>
-      <div class="remark border border-opacity-50 border-orange21 rounded-lg p-3 mt-2 pa-3">
-        <p class="text-white2">{{ item.note }}</p>
-      </div>
-    </div>
+  <v-timeline
+    truncate-line="end"
+    v-if="localItems.length"
+    side="end"
+    density="default"
+    line-color="rgba(255,140,0,0.35)"
+    class="journey-timeline mt-4">
+    <v-timeline-item
+      v-for="(item, index) in localItems"
+      :key="item.id"
+      dot-color="orange-darken-2"
+      icon="mdi-map-marker"
+      icon-color="white"
+      size="small">
+      <!-- 時間：顯示在軸線左側 -->
+      <template #opposite>
+        <v-chip
+          size="x-large"
+          color="orange-darken-1"
+          variant="tonal"
+          prepend-icon="mdi-clock-outline">
+          {{ item.time }}
+        </v-chip>
+      </template>
 
-  </v-card>
+      <!-- 卡片內容 -->
+      <v-card class="pa-4 info-bord2 mb-2 w-100" width="600" color="transparent" elevation="4">
+        <!-- 標題 + 編輯 -->
+        <div class="d-flex justify-space-between align-start mb-1">
+          <v-card-title class="text-white font-weight-bold">{{ item.title }}</v-card-title>
+          <v-btn
+            v-if="props.isEditMode"
+            size="x-small"
+            variant="tonal"
+            color="orange"
+            icon="mdi-pencil"
+            class="ml-2 flex-shrink-0"
+            @click="openEditDialog(index)"
+          ></v-btn>
+        </div>
+
+        <v-divider class="my-1" opacity="1" color="orange"></v-divider>  
+
+        <!-- 地址 & 導航 -->
+        <div class="d-flex align-center mt-3">
+          <v-icon color="red" size="large">mdi-map-marker</v-icon>
+          <span class="text-body-2 text-blue-grey-lighten-4 ml-1">{{ item.address }}</span>
+          <v-spacer></v-spacer>
+          <v-btn
+            class="border border-opacity-100 border-red"
+            size="small"
+            variant="tonal"
+            color="red"
+            @click="openGoogleMap(item.address)">
+            <template #default>
+              <p class="text-caption font-weight-bold text-white">導航</p>
+            </template>
+            <template #append>
+              <v-icon>mdi-navigation</v-icon>
+            </template>
+          </v-btn>
+        </div>
+
+        
+
+        <!-- 機票 -->
+        <div v-if="item.tickets" class="mt-4">
+          <airTickets :ticket="getDisplayTicket(item.tickets)" />
+        </div>
+
+        <!-- 備註 -->
+        <div v-if="item.note" class="mt-4">
+          <p class="text-orange text-body-2 mb-1">Remark 備註</p>
+          <div class="remark border border-opacity-50 border-orange21 rounded-lg pa-3">
+            <p class="text-white2 text-body-2 ma-0">{{ item.note }}</p>
+          </div>
+        </div>
+      </v-card>
+    </v-timeline-item>
+  </v-timeline>
 
   <!-- 編輯日程 -->
-  <EditDate v-model="editDialog" :initial-data="editFormData" @save="saveItem" />
+  <EditDate v-model="editDialog" :initial-data="editFormData" :mode="isCreatingItem ? 'create' : 'edit'" @save="saveItem" />
 
 
 
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import airTickets from '@/components/flightInfo/ticket.vue'
 import EditDate from './editDate.vue'
+import type {
+  EditJourneyInitialData,
+  FlightTicketDetail,
+  JourneyDay,
+  JourneyItem,
+  JourneyTicketInput,
+  JourneyTickets,
+} from '../types'
 
-const props = defineProps({
-    day: {
-        type: Object,
-        required: true,
-    },
-    isEditMode: {
-        type: Boolean,
-        default: false,
-    },
+const createDefaultTickets = (): JourneyTickets => ({
+  selectedTrip: 'outbound',
+  outbound: {
+    airline: 'Peach樂桃',
+    bookingCode: '5BPCRV',
+    flightNo: 'MM922',
+    departureAt: '2026/03/19 09:45',
+    notice: '如搭乘日本國內線航班，請於出發時間前120分鐘~50分鐘內完成手續',
+  },
+  inbound: {
+    airline: 'Peach樂桃',
+    bookingCode: '5BPCRV',
+    flightNo: 'MM929',
+    departureAt: '2026/03/23 16:50',
+    notice: '如搭乘日本國內線航班，請於出發時間前120分鐘~50分鐘內完成手續',
+  },
 })
 
-const localItems = ref([])
+const normalizeTickets = (tickets: JourneyTicketInput | undefined): JourneyTickets | null => {
+  if (!tickets) return null
+  if (tickets === true) return createDefaultTickets()
+
+  const defaults = createDefaultTickets()
+  const selectedTrip = tickets.selectedTrip === 'inbound' ? 'inbound' : 'outbound'
+
+  return {
+    selectedTrip,
+    outbound: {
+      ...defaults.outbound,
+      ...(tickets.outbound ?? {}),
+    },
+    inbound: {
+      ...defaults.inbound,
+      ...(tickets.inbound ?? {}),
+    },
+  }
+}
+
+const props = withDefaults(defineProps<{
+  day: JourneyDay
+  isEditMode?: boolean
+  addRequestKey?: number
+}>(), {
+  isEditMode: false,
+  addRequestKey: 0,
+})
+
+const localItems = ref<JourneyItem[]>([])
 
 const showHeader = ref(true)
 const isHeaderEditing = ref(false)
@@ -150,8 +232,9 @@ const headerDraft = ref({ title: '', rhythm: '' })
 
 const editDialog = ref(false)
 const editingIndex = ref(-1)
+const isCreatingItem = ref(false)
 
-const parseTimeRange = (time = '') => {
+const parseTimeRange = (time = ''): { startTime: string; endTime: string } => {
   const [startTime = '', endTime = ''] = String(time).split(' - ')
 
   return {
@@ -160,17 +243,17 @@ const parseTimeRange = (time = '') => {
   }
 }
 
-const editFormData = computed(() => {
+const editFormData = computed<EditJourneyInitialData>(() => {
   const item = localItems.value[editingIndex.value]
 
-  if (!item) {
+  if (isCreatingItem.value || !item) {
     return {
       startTime: '',
       endTime: '',
       title: '',
       address: '',
       note: '',
-      tickets: false,
+      tickets: null,
     }
   }
 
@@ -182,16 +265,16 @@ const editFormData = computed(() => {
     title: item.title ?? '',
     address: item.address ?? '',
     note: item.note ?? '',
-    tickets: Boolean(item.tickets),
+    tickets: normalizeTickets(item.tickets),
   }
 })
 
 watch(
     () => props.day,
     (nextDay) => {
-        localItems.value = (nextDay?.items ?? []).map((item) => ({
+        localItems.value = (nextDay?.items ?? []).map((item: JourneyItem) => ({
           ...item,
-          tickets: Boolean(item?.tickets),
+          tickets: normalizeTickets(item?.tickets),
         }))
 
     if (!isHeaderEditing.value) {
@@ -213,28 +296,52 @@ const startEditHeader = () => {
   isHeaderEditing.value = true
 }
 
-const openEditDialog = (index) => {
+const openEditDialog = (index: number): void => {
   if (!props.isEditMode) return
 
   editingIndex.value = index
+  isCreatingItem.value = false
   editDialog.value = true
 }
 
-const saveItem = (payload) => {
+const saveItem = (payload: EditJourneyInitialData): void => {
   const index = editingIndex.value
-  if (index < 0) return
-
   const startTime = payload.startTime?.trim() ?? ''
   const endTime = payload.endTime?.trim() ?? ''
   const time = startTime && endTime ? `${startTime} - ${endTime}` : startTime || endTime
 
-  const updatedItem = {
-    ...localItems.value[index],
+  if (isCreatingItem.value) {
+    const nextItem: JourneyItem = {
+      id: `${props.day.id}-${Date.now()}`,
+      time,
+      title: payload.title,
+      address: payload.address,
+      note: payload.note,
+      tickets: normalizeTickets(payload.tickets),
+    }
+
+    localItems.value.push(nextItem)
+
+    if (Array.isArray(props.day?.items)) {
+      props.day.items.push({ ...nextItem })
+    }
+
+    isCreatingItem.value = false
+    editingIndex.value = -1
+    return
+  }
+
+  if (index < 0) return
+  const currentItem = localItems.value[index]
+  if (!currentItem) return
+
+  const updatedItem: JourneyItem = {
+    ...currentItem,
     time,
     title: payload.title,
     address: payload.address,
     note: payload.note,
-    tickets: Boolean(payload.tickets),
+    tickets: normalizeTickets(payload.tickets),
   }
 
   localItems.value.splice(index, 1, updatedItem)
@@ -246,9 +353,38 @@ const saveItem = (payload) => {
   editingIndex.value = -1
 }
 
+const openCreateDialog = (): void => {
+  if (!props.isEditMode) return
+
+  editingIndex.value = -1
+  isCreatingItem.value = true
+  editDialog.value = true
+}
+
+watch(
+  () => props.addRequestKey,
+  (requestKey, previousRequestKey) => {
+    if (!requestKey || requestKey <= (previousRequestKey ?? 0)) return
+
+    openCreateDialog()
+  }
+)
+
+watch(editDialog, (open) => {
+  if (open) return
+
+  isCreatingItem.value = false
+  editingIndex.value = -1
+})
+
 const saveHeader = () => {
   if (!props.isEditMode) return
-  if (!props.day.header) props.day.header = {}
+  if (!props.day.header) {
+    props.day.header = {
+      title: '',
+      rhythm: '',
+    }
+  }
 
   props.day.header.title = headerDraft.value.title
   props.day.header.rhythm = headerDraft.value.rhythm
@@ -269,9 +405,15 @@ const deleteHeader = () => {
   window.alert('行程已刪除')
 }
 
-const openGoogleMap = (addr) => {
+const openGoogleMap = (addr: string): void => {
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`
-    window.open(url, '_blank')
+    window.open(url, '_blank', 'noopener,noreferrer')
+}
+
+const getDisplayTicket = (tickets: JourneyTicketInput): FlightTicketDetail => {
+  const normalizedTickets = normalizeTickets(tickets) ?? createDefaultTickets()
+
+  return normalizedTickets[normalizedTickets.selectedTrip]
 }
 </script>
 
@@ -290,5 +432,17 @@ const openGoogleMap = (addr) => {
 .info-bord2 {
     background-color: rgba(240, 255, 255, 0.096);
     border-radius: 24px;
+}
+
+// ── Timeline ──
+.journey-timeline {
+  :deep(.v-timeline-item__dot) {
+    box-shadow: 0 0 10px rgba(255, 140, 0, 0.4);
+  }
+}
+
+.timeline-time-chip {
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
 }
 </style>

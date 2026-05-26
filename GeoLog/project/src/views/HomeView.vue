@@ -6,9 +6,7 @@
           <div class="d-flex align-center justify-space-between flex-wrap ga-4">
             <div>
               <h1 class="text-h4 font-weight-bold mb-2">首頁</h1>
-              <p class="text-medium-emphasis mb-0">
-                這是一份 Vue 3 + Vite + Vuetify 的專案起手式。
-              </p>
+              <p class="text-medium-emphasis mb-0">這是一份 Vue 3 + Vite + Vuetify 的專案起手式。</p>
             </div>
 
             <v-btn color="primary" size="large" to="/dashboard">
