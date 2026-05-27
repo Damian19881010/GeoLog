@@ -70,8 +70,17 @@
               <!-- 文字 -->
               <v-card-item class="item">
                 <div class="d-flex ga-2 align-center w-100">
-                  <v-chip v-if="item.country !== ''" size="x-small" label color="white">{{ getLocationLabel(item.country) }}</v-chip>
-                  <v-chip v-if="item.city !== ''" size="x-small" color="yellow" prepend-icon="mdi-map-marker-radius">{{ getLocationLabel(item.city) }}</v-chip>
+                  <v-chip v-if="item.country !== ''" label color="white" class="country-chip">
+                    <template #prepend>
+                      <span
+                        v-if="getCountryFlagClass(item.country)"
+                        :class="['fi', getCountryFlagClass(item.country), 'country-flag']"
+                        aria-hidden="true"
+                      ></span>
+                    </template>
+                    {{ getLocationLabel(item.country) }}
+                  </v-chip>
+                  <v-chip v-if="item.city !== ''"  color="yellow" prepend-icon="mdi-map-marker-radius">{{ getLocationLabel(item.city) }}</v-chip>
                 </div>
                   <p class="title py-2">{{ item.name }}</p>
 
@@ -99,30 +108,23 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import tripImg from '@/assets/images/trip.png'
-import trip2 from '@/assets/images/trip2.png'
-import trip3 from '@/assets/images/trip3.png'
-import trip4 from '@/assets/images/trip4.png'
-import trip5 from '@/assets/images/trip5.png'
 import Creat from './components/creat.vue'
 import type { TripFormData } from './components/creat.vue'
+import {
+  fallbackCountryCityMap,
+  getCountryFlagClass,
+  getLocationLabel,
+  type CountryCityMap as LocationCountryCityMap,
+  toCityValue,
+  toCountryValue,
+} from './locationConfig'
+import mockTripData from './mockTripData.js'
+import type { Trip } from './types'
 
 const createDialog = ref(false)
 const selectedCountry = ref<string | null>(null)
 const selectedCity = ref<string | null>(null)
 const editingTripId = ref<number | null>(null)
-
-type Trip = {
-  id: number
-  name: string
-  days: number
-  startDate: string
-  endDate: string
-  country: string
-  city: string
-  image: string
-}
-
-type CountryCityMap = Record<string, string[]>
 
 type SelectOption = {
   title: string
@@ -142,7 +144,7 @@ type CountriesNowResponse = {
 
 type CachedCountryCityMap = {
   expiresAt: number
-  data: CountryCityMap
+  data: LocationCountryCityMap
 }
 
 const OTHER_OPTION = '其他'
@@ -150,76 +152,7 @@ const COUNTRY_CITY_ENDPOINT = 'https://countriesnow.space/api/v0.1/countries'
 const COUNTRY_CITY_CACHE_KEY = 'geolog:country-city-options:v2'
 const COUNTRY_CITY_CACHE_TTL = 1000 * 60 * 60 * 24 * 7
 
-const fallbackCountryCityMap: CountryCityMap = {
-  Japan: ['Okinawa', 'Osaka', 'Kyoto', 'Tokyo'],
-  'South Korea': ['Seoul', 'Busan', 'Jeju'],
-  Thailand: ['Bangkok', 'Chiang Mai', 'Phuket'],
-  Vietnam: ['Hanoi', 'Da Nang', 'Ho Chi Minh City'],
-  Singapore: ['Singapore'],
-  Malaysia: ['Kuala Lumpur', 'Penang', 'Kota Kinabalu'],
-  Philippines: ['Manila', 'Cebu', 'Boracay'],
-  Indonesia: ['Bali', 'Jakarta'],
-  Germany: ['Frankfurt', 'Berlin', 'Munich'],
-  Taiwan: ['Taipei', 'Taichung', 'Kaohsiung'],
-}
-
-const countryLabels: Record<string, string> = {
-  Japan: '日本',
-  'South Korea': '韓國',
-  Thailand: '泰國',
-  Vietnam: '越南',
-  Singapore: '新加坡',
-  Malaysia: '馬來西亞',
-  Philippines: '菲律賓',
-  Indonesia: '印尼',
-  Germany: '德國',
-  Taiwan: '台灣',
-  'United States': '美國',
-  'United Kingdom': '英國',
-  France: '法國',
-  Australia: '澳洲',
-}
-
-const cityLabels: Record<string, string> = {
-  Okinawa: '沖繩',
-  Osaka: '大阪',
-  Kyoto: '京都',
-  Tokyo: '東京',
-  Seoul: '首爾',
-  Busan: '釜山',
-  Jeju: '濟州',
-  Bangkok: '曼谷',
-  'Chiang Mai': '清邁',
-  Phuket: '普吉',
-  Hanoi: '河內',
-  'Da Nang': '峴港',
-  'Ho Chi Minh City': '胡志明',
-  'Kuala Lumpur': '吉隆坡',
-  Penang: '檳城',
-  'Kota Kinabalu': '亞庇',
-  Manila: '馬尼拉',
-  Cebu: '宿霧',
-  Boracay: '長灘島',
-  Bali: '峇里島',
-  Jakarta: '雅加達',
-  Frankfurt: '法蘭克福',
-  Berlin: '柏林',
-  Munich: '慕尼黑',
-  Taipei: '台北',
-  Taichung: '台中',
-  Kaohsiung: '高雄',
-  Singapore: '新加坡',
-}
-
-const countryValuesByLabel = Object.fromEntries(
-  Object.entries(countryLabels).map(([value, label]) => [label, value])
-) as Record<string, string>
-
-const cityValuesByLabel = Object.fromEntries(
-  Object.entries(cityLabels).map(([value, label]) => [label, value])
-) as Record<string, string>
-
-const countryCityMap = ref<CountryCityMap>(fallbackCountryCityMap)
+const countryCityMap = ref<LocationCountryCityMap>(fallbackCountryCityMap)
 const isLocationLoading = ref(false)
 const locationLoadError = ref('')
 
@@ -259,17 +192,8 @@ const toSelectOptions = (items: string[]) =>
     value,
   }))
 
-const getLocationLabel = (value: string) =>
-  countryLabels[value] ?? cityLabels[value] ?? value
-
-const toCountryValue = (value: string) =>
-  countryValuesByLabel[value] ?? value
-
-const toCityValue = (value: string) =>
-  cityValuesByLabel[value] ?? value
-
 const normalizeCountryCityMap = (countries: CountriesNowCountry[]) => {
-  return countries.reduce<CountryCityMap>((map, item) => {
+  return countries.reduce<LocationCountryCityMap>((map, item) => {
     const country = item.country.trim()
 
     if (country && Array.isArray(item.cities)) {
@@ -294,7 +218,7 @@ const readCountryCityCache = () => {
   }
 }
 
-const writeCountryCityCache = (data: CountryCityMap) => {
+const writeCountryCityCache = (data: LocationCountryCityMap) => {
   try {
     localStorage.setItem(COUNTRY_CITY_CACHE_KEY, JSON.stringify({
       expiresAt: Date.now() + COUNTRY_CITY_CACHE_TTL,
@@ -397,58 +321,7 @@ const getTripDays = (startDate: string, endDate: string) =>
 
 const router = useRouter()
 
-const trips = ref<Trip[]>([
-  {
-    id: 1,
-    name: '沖繩5天4夜自由行-範例',
-    days: 5,
-    startDate: '2022-01-01',
-    endDate: '2022-01-03',
-    country: 'Japan',
-    city: 'Okinawa',
-    image: tripImg
-  },
-  {
-    id: 2,
-    name: '沖繩3天2夜',
-    days: 3,
-    startDate: '2026-08-01',
-    endDate: '2026-08-08',
-    country: 'Japan',
-    city:'Okinawa',
-    image: trip2
-  },
-  {
-    id: 3,
-    name: '大阪京都自由行',
-    days: 7,
-    startDate: '2026-08-01',
-    endDate: '2026-08-07',
-    country: 'Japan',
-    city:'Osaka',
-    image: trip3
-  },
-  {
-    id: 4,
-    name: '法蘭克福自由行',
-    days: 7,
-    startDate: '2026-08-01',
-    endDate: '2026-08-07',
-    country: 'Germany',
-    city:'Frankfurt',
-    image: trip4
-  },
-   {
-    id: 5,
-    name: '台北自由行',
-    days: 7,
-    startDate: '2026-08-01',
-    endDate: '2026-08-07',
-    country: 'Taiwan',
-    city:'Taipei',
-    image: trip5
-  },
-])
+const trips = ref<Trip[]>(mockTripData.map((trip) => ({ ...trip })))
 
 const dialogMode = computed(() => editingTripId.value === null ? 'create' : 'edit')
 
@@ -618,6 +491,17 @@ const isEditing = ref(false)
   }
 
 
+}
+
+.country-chip :deep(.v-chip__prepend) {
+  margin-inline-end: 6px;
+}
+
+.country-flag {
+  display: inline-block;
+  width: 18px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.12);
 }
 
 .edit {

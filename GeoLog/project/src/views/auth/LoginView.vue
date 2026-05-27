@@ -2,7 +2,8 @@
   <div class="auth-card-wrapper">
     <!-- Logo / Brand -->
     <div class="auth-brand">
-      <span class="auth-brand__icon">🌍</span>
+      <!-- <span class="auth-brand__icon">🌍</span> -->
+      <v-img :src="geminiLogo" width="92" height="92" class="auth-brand__icon"/>
       <span class="auth-brand__name">GeoLog</span>
     </div>
 
@@ -12,8 +13,7 @@
         <button
           class="auth-tab"
           :class="{ 'auth-tab--active': panel === 'login' }"
-          @click="switchPanel('login')"
-        >
+          @click="switchPanel('login')">
           登入
         </button>
         <button
@@ -87,16 +87,41 @@
               {{ loginErrors.general }}
             </v-alert>
 
-            <v-btn
-              block
-              type="submit"
-              :loading="isLoading"
-              class="auth-submit-btn"
-              size="large"
-            >
-              <v-icon left class="mr-2">mdi-login</v-icon>
-              登入
-            </v-btn>
+            <div class="auth-login-actions">
+              <v-btn
+                block
+                type="submit"
+                :loading="isLoading && loginAction === 'standard'"
+                :disabled="isLoading"
+                class="auth-submit-btn"
+                size="large"
+              >
+                <v-icon left class="mr-2">mdi-login</v-icon>
+                登入
+              </v-btn>
+
+              <div class="auth-direct-login">
+                <div class="auth-direct-login__divider">
+                  <span>或使用管理身分</span>
+                </div>
+
+                <v-btn
+                  block
+                  type="button"
+                  variant="outlined"
+                  :loading="isLoading && loginAction === 'admin'"
+                  :disabled="isLoading"
+                  class="auth-admin-btn"
+                  size="large"
+                  @click="handleAdminLogin"
+                >
+                  <v-icon left class="mr-2">mdi-shield-crown-outline</v-icon>
+                  總管理直接登入
+                </v-btn>
+
+                <p class="auth-direct-login__hint">免輸入帳號密碼，直接進入管理主頁。</p>
+              </div>
+            </div>
           </v-form>
 
           <p class="auth-footer-text">
@@ -308,8 +333,10 @@
 import { reactive, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { persistAuthSession } from '@/utils/auth'
+import geminiLogo from '@/assets/images/gemini.svg'
 
 type Panel = 'login' | 'register' | 'forgot'
+type LoginAction = 'standard' | 'admin'
 
 const router = useRouter()
 const route = useRoute()
@@ -318,6 +345,7 @@ const route = useRoute()
 const panel = ref<Panel>('login')
 const transitionName = ref('slide-left')
 const isLoading = ref(false)
+const loginAction = ref<LoginAction | null>(null)
 
 const panelOrder: Panel[] = ['login', 'register']
 function switchPanel(target: Panel) {
@@ -340,10 +368,24 @@ const loginForm = reactive({ account: '', password: '' })
 const showLoginPwd = ref(false)
 const loginErrors = reactive({ account: '', password: '', general: '' })
 
-function validateLogin(): boolean {
+function clearLoginErrors() {
   loginErrors.account = ''
   loginErrors.password = ''
   loginErrors.general = ''
+}
+
+function resolvePostLoginRedirect(fallback = '/') {
+  const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : fallback
+  return redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : fallback
+}
+
+async function finalizeLogin(sessionToken: string, fallbackRedirect = '/') {
+  persistAuthSession(sessionToken)
+  await router.replace(resolvePostLoginRedirect(fallbackRedirect))
+}
+
+function validateLogin(): boolean {
+  clearLoginErrors()
   let ok = true
   if (!loginForm.account) { loginErrors.account = '請輸入電子信箱'; ok = false }
   if (!loginForm.password) { loginErrors.password = '請輸入密碼'; ok = false }
@@ -352,13 +394,28 @@ function validateLogin(): boolean {
 
 const handleLogin = async () => {
   if (!validateLogin()) return
+  loginAction.value = 'standard'
   isLoading.value = true
-  await new Promise(r => setTimeout(r, 800)) // simulate API
-  persistAuthSession(`${loginForm.account}-session`)
-  const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
-  const safeRedirect = redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/'
-  await router.replace(safeRedirect)
-  isLoading.value = false
+  try {
+    await new Promise(r => setTimeout(r, 800)) // simulate API
+    await finalizeLogin(`${loginForm.account}-session`)
+  } finally {
+    isLoading.value = false
+    loginAction.value = null
+  }
+}
+
+const handleAdminLogin = async () => {
+  clearLoginErrors()
+  loginAction.value = 'admin'
+  isLoading.value = true
+  try {
+    await new Promise(r => setTimeout(r, 350))
+    await finalizeLogin('super-admin-session', '/dashboard')
+  } finally {
+    isLoading.value = false
+    loginAction.value = null
+  }
 }
 
 // ── FORGOT PASSWORD ──
@@ -472,6 +529,8 @@ const handleRegister = async () => {
 }
 .auth-brand__name {
   background: linear-gradient(90deg, #ffb26b, #ff6e00);
+  font-size: 2rem;
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -667,6 +726,13 @@ const handleRegister = async () => {
   }
 }
 
+.auth-login-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
 // ── Submit Button ──
 .auth-submit-btn {
   background: linear-gradient(135deg, #ff8c00, #ff5500) !important;
@@ -676,7 +742,7 @@ const handleRegister = async () => {
   border-radius: 12px !important;
   box-shadow: 0 4px 20px rgba(255, 100, 0, 0.35) !important;
   transition: transform 0.15s ease, box-shadow 0.15s ease !important;
-  margin-bottom: 20px;
+  margin-bottom: 0;
 
   &:hover {
     transform: translateY(-1px);
@@ -684,6 +750,60 @@ const handleRegister = async () => {
   }
   &:active {
     transform: translateY(0);
+  }
+}
+
+.auth-direct-login {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &__divider {
+    position: relative;
+    text-align: center;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    span {
+      position: relative;
+      display: inline-block;
+      padding: 0 12px;
+      background: rgba(7, 13, 28, 0.88);
+      color: rgba(255, 255, 255, 0.38);
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+    }
+  }
+
+  &__hint {
+    margin: 0;
+    text-align: center;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.42);
+  }
+}
+
+.auth-admin-btn {
+  border: 1px solid rgba(255, 178, 107, 0.35) !important;
+  background: rgba(255, 178, 107, 0.08) !important;
+  color: #ffd6ac !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.03em !important;
+  border-radius: 12px !important;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease !important;
+
+  &:hover {
+    transform: translateY(-1px);
+    border-color: rgba(255, 178, 107, 0.55) !important;
+    background: rgba(255, 178, 107, 0.14) !important;
   }
 }
 

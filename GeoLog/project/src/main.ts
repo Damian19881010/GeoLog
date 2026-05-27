@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router'
 import vuetify from './plugins/vuetify'
 import '@mdi/font/css/materialdesignicons.css'
+import 'flag-icons/css/flag-icons.min.css'
 import './assets/styles/main.scss'
 import './assets/styles/variables.scss'
 

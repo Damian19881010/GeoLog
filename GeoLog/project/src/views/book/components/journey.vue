@@ -1,78 +1,9 @@
 <template>
   <!-- 標頭 前言-->
-  <v-card v-if="showHeader" class="pa-5 mt-5  info-bord1" color="transparent" elevation="5">
-    <!-- 預覽模式 -->
-
-    <template v-if="!isHeaderEditing">
-      <div class="d-flex justify-space-between align-center">
-        <v-chip class="mb-2" color="amber-lighten-5" label prepend-icon="mdi-calendar-today">{{ day.date }}</v-chip>
-        <v-btn
-          v-if="props.isEditMode"
-          size="x-small"
-          variant="tonal"
-          color="orange"
-          icon="mdi-pencil"
-          @click="startEditHeader"
-        ></v-btn>
-      </div>
-      <p class="font-weight-bold text-white2 text-h4 ">{{ day.header.title }}</p>
-      <p class="text-orange-lighten-3 pt-2">{{ day.header.rhythm }}</p>
-    </template>
-
-
-    <!-- 編輯模式 -->
-    <template v-if="props.isEditMode && isHeaderEditing" >
-      <v-text-field 
-        v-model="headerDraft.title" 
-        label="標題" 
-        class="text-white2" 
-        variant="outlined" 
-        color="orange" 
-        hide-details="auto"
-        density="compact" 
-        base-color="orange">
-      </v-text-field>
-      <v-text-field 
-        v-model="headerDraft.rhythm" 
-        class="mt-3 text-white2" 
-        label="節奏" 
-        aria-placeholder="請填寫節奏（例如：輕鬆、緊湊"
-        variant="outlined" 
-        color="orange"
-        hide-details="auto" 
-        density="compact" 
-        base-color="orange">
-      </v-text-field>
-      
-      <div class="mt-3 ga-2 d-flex align-center"> 
-        <v-spacer></v-spacer>
-        <v-btn
-          v-if="props.isEditMode"
-          size="small"
-          variant="tonal"
-          color="white2"
-          icon="mdi-keyboard-return"
-          @click="isHeaderEditing = false"
-        ></v-btn>
-        <v-btn
-          v-if="props.isEditMode"
-          size="small"
-          variant="tonal"
-          color="orange"
-          icon="mdi-content-save"
-          @click="saveHeader"
-        ></v-btn>
-        <v-btn
-          v-if="props.isEditMode"
-          size="small"
-          variant="tonal"
-          color="red"
-          icon="mdi-trash-can"
-          @click="deleteHeader"
-        ></v-btn>
-
-      </div>
-    </template>
+  <v-card  class="pa-5 mt-5  info-bord1" color="transparent" elevation="5">
+    <v-chip class="mb-2" size="x-large" color="amber-lighten-5" label prepend-icon="mdi-calendar-today">{{ day.date }}</v-chip>
+    <v-card-title class="font-weight-bold text-white2 text-h4 ">{{ day.header.title }}</v-card-title>
+    <p class="text-orange-lighten-3 pt-2 px-4">{{ day.header.rhythm }}</p>
   </v-card>
 
   <!-- 日程 -->
@@ -80,7 +11,7 @@
     truncate-line="end"
     v-if="sortedItems.length"
     side="end"
-    density="default"
+    :density="timelineDensity"
     line-color="rgba(255,140,0,0.35)"
     class="journey-timeline mt-4">
     <v-timeline-item
@@ -102,10 +33,17 @@
       </template>
 
       <!-- 卡片內容 -->
-      <v-card class="pa-4 info-bord2 mb-2 w-100" width="600" color="transparent" elevation="4">
+      <v-card class="pa-4 info-bord2 mb-2 w-100"  color="transparent" elevation="4">
+        <v-chip
+          v-if="timelineDensity === 'compact'"
+          color="orange-darken-1"
+          variant="tonal"
+          prepend-icon="mdi-clock-outline">
+          {{ item.time }}
+        </v-chip>
         <!-- 標題 + 編輯 -->
-        <div class="d-flex justify-space-between align-start mb-1">
-          <v-card-title class="text-white font-weight-bold">{{ item.title }}</v-card-title>
+        <div class="d-flex justify-space-between align-start mb-1 flex-wrap">
+          <p class="text-white font-weight-bold title">{{ item.title }}</p>
           <v-btn
             v-if="props.isEditMode"
             size="x-small"
@@ -120,9 +58,9 @@
         <v-divider class="my-1" opacity="1" color="orange"></v-divider>  
 
         <!-- 地址 & 導航 -->
-        <div class="d-flex align-center mt-3">
+        <div class="d-flex flex-wrap align-center mt-3">
           <v-icon color="red" size="large">mdi-map-marker</v-icon>
-          <span class="text-body-2 text-blue-grey-lighten-4 ml-1">{{ item.address }}</span>
+          <p class="text-body-2 text-blue-grey-lighten-4 ">{{ item.address }}</p>
           <v-spacer></v-spacer>
           <v-btn
             class="border border-opacity-100 border-red"
@@ -166,6 +104,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useDisplay } from 'vuetify'
 import airTickets from '@/components/flightInfo/ticket.vue'
 import EditDate from './editDate.vue'
 import type {
@@ -223,6 +162,9 @@ const props = withDefaults(defineProps<{
   isEditMode: false,
   addRequestKey: 0,
 })
+
+const { width } = useDisplay()
+const timelineDensity = computed(() => width.value <= 820 ? 'compact' : 'default')
 
 const localItems = ref<JourneyItem[]>([])
 
@@ -421,6 +363,13 @@ const getDisplayTicket = (tickets: JourneyTicketInput): FlightTicketDetail => {
 </script>
 
 <style lang="scss" scoped>
+/* 【 設置RWD 】*/
+@mixin breakpoint($point) {
+  @media screen and (max-width: $point) {
+    @content;
+  }
+}
+
 .top {
     background-color: rgba(240, 255, 255, 0.096);
     border-radius: 24px;
@@ -435,7 +384,22 @@ const getDisplayTicket = (tickets: JourneyTicketInput): FlightTicketDetail => {
 .info-bord2 {
     background-color: rgba(240, 255, 255, 0.096);
     border-radius: 24px;
+    width: 800px;
+    @include breakpoint(1280px) {
+      width: 500px;
+    }
+    @include breakpoint(912px) {
+      width: 400px;
+    }
+    @include breakpoint(820px) {
+      width: 100%;
+    }
+    @include breakpoint(600px) {
+      width: 100%;
+    }
+
 }
+
 
 // ── Timeline ──
 .journey-timeline {

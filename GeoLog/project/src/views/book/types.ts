@@ -1,5 +1,16 @@
 export type TripDirection = 'outbound' | 'inbound'
 
+export interface Trip {
+  id: number
+  name: string
+  days: number
+  startDate: string
+  endDate: string
+  country: string
+  city: string
+  image: string
+}
+
 export interface FlightTicketDetail {
   airline: string
   bookingCode: string

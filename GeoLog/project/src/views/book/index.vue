@@ -89,6 +89,12 @@ watch(tab, () => {
 </script>
 
 <style scoped lang="scss">
+@mixin breakpoint($point) {
+  @media screen and (max-width: $point) {
+    @content;
+  }
+}
+
 .book-root {
   overflow-x: hidden;
   height: 100vh;
@@ -103,6 +109,10 @@ watch(tab, () => {
   right: 0;
   margin: 0 auto;
   padding-bottom: 12px;
+  @include breakpoint(960px) {
+    width: 90%;
+  }
+
 }
 
 .page {
@@ -118,6 +128,10 @@ watch(tab, () => {
   overflow-y: auto;
   &::-webkit-scrollbar {
     width: 5px !important;
+  }
+
+   @include breakpoint(960px) {
+    width: 90%;
   }
 }
 
