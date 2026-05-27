@@ -6,7 +6,9 @@
         class="top add pa-5 border border-dashed border-orange21 border-opacity-100 d-flex justify-center align-center rounded-lg ga-2 flex-wrap"
         color="transparent">
         <!-- 快速過濾 -->
+        <!-- 國家 -->
         <v-select v-model="selectedCountry" class="text-white country-select w-100" :items="countryOptions"
+          item-title="title" item-value="value"
           variant="outlined" density="compact" hide-details="auto" max-width="200" theme="dark"
           clearable
           :loading="isLocationLoading"
@@ -18,7 +20,9 @@
             </div>
           </template>
         </v-select>
+        <!-- 城市 -->
         <v-select v-model="selectedCity" class="text-white country-select w-100" :items="cityOptions"
+          item-title="title" item-value="value"
           variant="outlined" density="compact" hide-details="auto" max-width="200" theme="dark"
           clearable
           :disabled="!selectedCountry || isLocationLoading"
@@ -32,7 +36,33 @@
             </div>
           </template>
         </v-select>
-
+        <!-- 時間(年月) -->
+        <v-select v-model="selectedYear" class="text-white country-select w-100" :items="yearOptions"
+          item-title="title" item-value="value"
+          variant="outlined" density="compact" hide-details="auto" max-width="140" theme="dark"
+          clearable
+          :menu-props="{ contentClass: 'country-dropdown' }">
+          <template #label>
+            <div class="d-flex align-center ga-2">
+              <v-icon icon="mdi-calendar-month" color="white"></v-icon>
+              <span class="text-orange21">年份</span>
+            </div>
+          </template>
+        </v-select>
+        <v-select v-model="selectedMonth" class="text-white country-select w-100" :items="monthOptions"
+          item-title="title" item-value="value"
+          variant="outlined" density="compact" hide-details="auto" max-width="140" theme="dark"
+          clearable
+          :disabled="!selectedYear"
+          :no-data-text="selectedYear ? '該年份沒有月份資料' : '請先選擇年份'"
+          :menu-props="{ contentClass: 'country-dropdown' }">
+          <template #label>
+            <div class="d-flex align-center ga-2">
+              <v-icon icon="mdi-calendar-text" color="white"></v-icon>
+              <span class="text-orange21">月份</span>
+            </div>
+          </template>
+        </v-select>
         <v-spacer />
 
         <!-- 文字 -->
@@ -124,6 +154,8 @@ import type { Trip } from './types'
 const createDialog = ref(false)
 const selectedCountry = ref<string | null>(null)
 const selectedCity = ref<string | null>(null)
+const selectedYear = ref<string | null>(null)
+const selectedMonth = ref<string | null>(null)
 const editingTripId = ref<number | null>(null)
 
 type SelectOption = {
@@ -156,6 +188,16 @@ const countryCityMap = ref<LocationCountryCityMap>(fallbackCountryCityMap)
 const isLocationLoading = ref(false)
 const locationLoadError = ref('')
 
+const normalizedSelectedCountry = computed(() => {
+  if (!selectedCountry.value) return null
+  return selectedCountry.value === OTHER_OPTION ? OTHER_OPTION : toCountryValue(selectedCountry.value)
+})
+
+const normalizedSelectedCity = computed(() => {
+  if (!selectedCity.value) return null
+  return selectedCity.value === OTHER_OPTION ? OTHER_OPTION : toCityValue(selectedCity.value)
+})
+
 const countryOptions = computed<SelectOption[]>(() =>
   toSelectOptions(withOtherOption([
     ...Object.keys(countryCityMap.value),
@@ -164,14 +206,38 @@ const countryOptions = computed<SelectOption[]>(() =>
 )
 
 const cityOptions = computed<SelectOption[]>(() => {
-  if (!selectedCountry.value) return []
+  if (!normalizedSelectedCountry.value) return []
 
   return toSelectOptions(withOtherOption([
-    ...(countryCityMap.value[selectedCountry.value] ?? []),
+    ...(countryCityMap.value[normalizedSelectedCountry.value] ?? []),
     ...trips.value
-      .filter((trip) => trip.country === selectedCountry.value)
+      .filter((trip) => trip.country === normalizedSelectedCountry.value)
       .map((trip) => trip.city),
   ]))
+})
+
+const yearOptions = computed<SelectOption[]>(() => {
+  const years = Array.from(new Set(
+    trips.value.flatMap((trip) => getTripYearsInRange(trip))
+  )).sort((left, right) => Number(right) - Number(left))
+
+  return years.map((year) => ({
+    title: `${year}年`,
+    value: year,
+  }))
+})
+
+const monthOptions = computed<SelectOption[]>(() => {
+  if (!selectedYear.value) return []
+
+  const months = Array.from(new Set(
+    trips.value.flatMap((trip) => getTripMonthsInYear(trip, Number(selectedYear.value)))
+  )).sort((left, right) => Number(left) - Number(right))
+
+  return months.map((month) => ({
+    title: `${month}月`,
+    value: month,
+  }))
 })
 
 const withOtherOption = (items: string[]) => {
@@ -191,6 +257,61 @@ const toSelectOptions = (items: string[]) =>
     title: getLocationLabel(value),
     value,
   }))
+
+const getTripDateRange = (trip: Trip) => {
+  const start = new Date(`${trip.startDate}T00:00:00`)
+  const end = new Date(`${trip.endDate}T23:59:59.999`)
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null
+
+  return start <= end ? { start, end } : { start: end, end: start }
+}
+
+const getTripYearsInRange = (trip: Trip) => {
+  const range = getTripDateRange(trip)
+  if (!range) return []
+
+  const years: string[] = []
+
+  for (let year = range.start.getFullYear(); year <= range.end.getFullYear(); year += 1) {
+    years.push(String(year))
+  }
+
+  return years
+}
+
+const getTripMonthsInYear = (trip: Trip, year: number) => {
+  const range = getTripDateRange(trip)
+  if (!range || range.start.getFullYear() > year || range.end.getFullYear() < year) return []
+
+  const startMonth = range.start.getFullYear() === year ? range.start.getMonth() + 1 : 1
+  const endMonth = range.end.getFullYear() === year ? range.end.getMonth() + 1 : 12
+  const months: string[] = []
+
+  for (let month = startMonth; month <= endMonth; month += 1) {
+    months.push(String(month).padStart(2, '0'))
+  }
+
+  return months
+}
+
+const matchesSelectedDate = (trip: Trip) => {
+  if (!selectedYear.value) return true
+
+  const range = getTripDateRange(trip)
+  if (!range) return false
+
+  const year = Number(selectedYear.value)
+  const month = selectedMonth.value ? Number(selectedMonth.value) : null
+  const filterStart = month
+    ? new Date(year, month - 1, 1)
+    : new Date(year, 0, 1)
+  const filterEnd = month
+    ? new Date(year, month, 0, 23, 59, 59, 999)
+    : new Date(year, 11, 31, 23, 59, 59, 999)
+
+  return range.start <= filterEnd && range.end >= filterStart
+}
 
 const normalizeCountryCityMap = (countries: CountriesNowCountry[]) => {
   return countries.reduce<LocationCountryCityMap>((map, item) => {
@@ -347,8 +468,14 @@ watch(createDialog, (open) => {
 })
 
 watch(selectedCountry, () => {
-  if (selectedCity.value && !cityOptions.value.some((city) => city.value === selectedCity.value)) {
+  if (normalizedSelectedCity.value && !cityOptions.value.some((city) => city.value === normalizedSelectedCity.value)) {
     selectedCity.value = null
+  }
+})
+
+watch(selectedYear, () => {
+  if (selectedMonth.value && !monthOptions.value.some((month) => month.value === selectedMonth.value)) {
+    selectedMonth.value = null
   }
 })
 
@@ -360,16 +487,18 @@ const filteredTrips = computed(() =>
     const cityCandidates = cityOptions.value
       .map((city) => city.value)
       .filter((city) => city !== OTHER_OPTION)
-    const matchesCountry = !selectedCountry.value ||
-      (selectedCountry.value === OTHER_OPTION
+    const matchesCountry = !normalizedSelectedCountry.value ||
+      (normalizedSelectedCountry.value === OTHER_OPTION
         ? !countryCandidates.includes(trip.country)
-        : trip.country === selectedCountry.value)
-    const matchesCity = !selectedCity.value ||
-      (selectedCity.value === OTHER_OPTION
+        : trip.country === normalizedSelectedCountry.value)
+    const matchesCity = !normalizedSelectedCity.value ||
+      (normalizedSelectedCity.value === OTHER_OPTION
         ? !cityCandidates.includes(trip.city)
-        : trip.city === selectedCity.value)
+        : trip.city === normalizedSelectedCity.value)
 
-    return matchesCountry && matchesCity
+    const matchesDate = matchesSelectedDate(trip)
+
+    return matchesCountry && matchesCity && matchesDate
   })
 )
 
