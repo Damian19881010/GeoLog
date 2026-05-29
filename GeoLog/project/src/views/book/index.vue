@@ -1,11 +1,16 @@
 <template>
-  <v-container fluid class="book-root">
-
+  <v-container fluid class="book-root ">
     <section class="workspace">
       <WorkSpace v-model:tab="tab" v-model:is-edit-mode="isEditMode" :days="visibleJourneyTabs"
         @open-edit-tab="editTabDialog = true"
         @add-journey="requestAddJourney" />
     </section>
+
+    <section class="w-90 mx-auto">
+      <SelectDate v-model:tab="tab" :is-edit-mode="isEditMode" :days="visibleJourneyTabs"
+        @open-edit-tab="editTabDialog = true" />
+    </section>
+
 
     <section class="page">
       <v-window v-model="tab" class="date">
@@ -39,6 +44,7 @@ import CarInfo from '@/components/carInfo/car.vue'
 import FlightTicket from '@/components/flightInfo/flight.vue'
 import EditTab from './components/editTab.vue'
 import Journey from './components/journey.vue'
+import SelectDate from './components/selectDate.vue'
 import WorkSpace from './components/workSpace.vue'
 import { journeyTabs } from './mockJourneyData'
 import type { JourneyDay } from './types'
@@ -98,13 +104,14 @@ watch(tab, () => {
 .book-root {
   overflow-x: hidden;
   height: 100vh;
+  // background: linear-gradient(180deg, #1e1e1e 0%, #121212 100%);
 }
 
 .workspace {
-  position: fixed;
+  // position: fixed; 
   z-index: 900;
-  width: 80%;
-  top: 140px;
+  width: 90%;
+  // top: 10px;
   left: 0;
   right: 0;
   margin: 0 auto;
@@ -116,23 +123,27 @@ watch(tab, () => {
 }
 
 .page {
-  width: 80%;
-  margin: 10px auto 0;
-  position: fixed;
-  padding: 0 15px;
-  top: 380px;
+  width: 90%;
+  margin: 0px auto 0;
+  // position: fixed;
+  // padding: 0 15px;。
+  top: 280px;
   left: 0;
   right: 0;
-  max-height: calc(100% - 400px);
+  // max-height: calc(100% - 400px);
   overflow-x: hidden;
   overflow-y: auto;
   &::-webkit-scrollbar {
     width: 5px !important;
   }
 
-   @include breakpoint(960px) {
+  @include breakpoint(960px) {
     width: 90%;
   }
+  @include breakpoint(768px) {
+    width: 95%;
+  }
+
 }
 
 @media (max-width: 600px) {

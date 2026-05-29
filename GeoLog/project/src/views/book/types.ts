@@ -1,5 +1,15 @@
 export type TripDirection = 'outbound' | 'inbound'
 
+export type JourneyTag = 'food' | 'attraction' | 'shopping' | 'transport' | 'hotel' | 'activity'
+
+export type TransportMode = 'walk' | 'drive' | 'train' | 'bus' | 'flight' | 'taxi'
+
+export interface TransportSegment {
+  mode: TransportMode
+  duration: string // e.g. "15 分鐘"
+  note?: string
+}
+
 export interface Trip {
   id: number
   name: string
@@ -34,9 +44,14 @@ export interface JourneyItem {
   time: string
   title: string
   address: string
+  lat?: number
+  lng?: number
   note?: string | null
   tickets: JourneyTicketInput
   accommodation?: JourneyAccommodationInput
+  tags?: JourneyTag[]
+  transport?: TransportSegment | null
+  visited?: boolean
 }
 
 export interface JourneyHeader {
@@ -59,4 +74,6 @@ export interface EditJourneyInitialData {
   address: string
   note: string
   tickets: JourneyTickets | null
+  tags?: JourneyTag[]
+  transport?: TransportSegment | null
 }

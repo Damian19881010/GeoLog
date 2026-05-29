@@ -2,6 +2,7 @@
   <v-card class="book-toolbar d-flex align-center ga-3 px-3" color="transparent" elevation="0">
     <v-switch
       v-model="isEditMode"
+      density="compact"
       color="orange-darken-3"
       class="text-orange font-weight-bold"
       hide-details="auto">

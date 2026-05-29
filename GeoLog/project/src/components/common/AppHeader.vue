@@ -3,7 +3,7 @@
     <v-toolbar class="px-8 centerpart" density="compact" height="90" rounded="pill">
       <template #prepend>
         <v-btn class="menu-toggle-btn" icon="mdi-menu" color="orange21" variant="text" @click="emit('toggle-menu')" />
-        <v-img :src="geminiLogo" width="60" height="60"></v-img>
+        <v-img class="logo" :src="geminiLogo" width="60" height="60"/>
         <v-toolbar-title class="title text-orange21 font-weight-bold">
           <span >GeoLog</span>
           <span class="text-blue-grey-lighten-3 ms-2 text-h6">日誌系統</span>

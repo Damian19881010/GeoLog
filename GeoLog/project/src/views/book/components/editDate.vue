@@ -53,6 +53,49 @@
           <div class="section-block mt-6">
             <div class="section-label mb-3">OPTIONS</div>
 
+            <!-- 標籤選擇 -->
+            <div class="option-card pa-4 mb-4">
+              <div class="option-title mb-2">行程標籤</div>
+              <div class="option-subtitle mb-3">Tag this schedule item for easy filtering</div>
+              <div class="d-flex flex-wrap ga-2">
+                <v-chip v-for="tag in availableTags" :key="tag.value" :color="tag.color"
+                  :variant="form.tags.includes(tag.value) ? 'flat' : 'outlined'"
+                  :prepend-icon="tag.icon" size="small" class="cursor-pointer"
+                  @click="toggleTag(tag.value)">
+                  {{ tag.label }}
+                </v-chip>
+              </div>
+            </div>
+
+            <!-- 交通方式 -->
+            <div class="option-card pa-4 mb-4">
+              <div class="d-flex flex-column flex-sm-row align-sm-center justify-space-between ga-3 mb-3">
+                <div>
+                  <div class="option-title">前往下一站的交通</div>
+                  <div class="option-subtitle">How to get to the next destination</div>
+                </div>
+                <v-btn-toggle v-model="form.hasTransport" mandatory divided class="flight-toggle">
+                  <v-btn :value="true" class="toggle-btn">有</v-btn>
+                  <v-btn :value="false" class="toggle-btn">無</v-btn>
+                </v-btn-toggle>
+              </div>
+
+              <div v-if="form.hasTransport" class="d-flex flex-wrap ga-3">
+                <v-select v-model="form.transportMode" :items="transportModeOptions" item-title="label"
+                  item-value="value" label="交通方式" variant="outlined" density="comfortable" color="orange"
+                  base-color="orange" prepend-inner-icon="mdi-swap-horizontal" hide-details="auto"
+                  class="flex-grow-1" style="min-width: 140px;" />
+
+                <v-text-field v-model="form.transportDuration" label="預估時間" variant="outlined"
+                  density="comfortable" color="orange" base-color="orange" prepend-inner-icon="mdi-timer-outline"
+                  hide-details="auto" placeholder="例：30 分鐘" class="flex-grow-1" style="min-width: 140px;" />
+
+                <v-text-field v-model="form.transportNote" label="備註" variant="outlined"
+                  density="comfortable" color="orange" base-color="orange" prepend-inner-icon="mdi-note-outline"
+                  hide-details="auto" placeholder="選填" class="w-100" />
+              </div>
+            </div>
+
             <div class="option-card pa-4">
               <div class="d-flex flex-column flex-sm-row align-sm-center justify-space-between ga-3">
                 <div>
@@ -121,7 +164,9 @@ import airTickets from '@/components/flightInfo/ticket.vue'
 import TimePicker from '@/components/shared/timePicker.vue'
 import type {
   EditJourneyInitialData,
+  JourneyTag,
   JourneyTickets,
+  TransportMode,
   TripDirection,
 } from '../types'
 
@@ -176,6 +221,8 @@ const props = withDefaults(defineProps<{
     address: '',
     note: '',
     tickets: null,
+    tags: [],
+    transport: null,
   }),
 })
 
@@ -202,7 +249,40 @@ const form = reactive({
   hasTickets: false,
   ticketDirection: 'outbound' as TripDirection,
   tickets: createDefaultTickets(),
+  tags: [] as JourneyTag[],
+  hasTransport: false,
+  transportMode: 'drive' as TransportMode,
+  transportDuration: '',
+  transportNote: '',
 })
+
+// 標籤選項
+const availableTags: { value: JourneyTag; label: string; color: string; icon: string }[] = [
+  { value: 'food', label: '美食', color: 'red-darken-1', icon: 'mdi-silverware-fork-knife' },
+  { value: 'attraction', label: '景點', color: 'blue-darken-1', icon: 'mdi-camera' },
+  { value: 'shopping', label: '購物', color: 'pink-darken-1', icon: 'mdi-shopping' },
+  { value: 'transport', label: '交通', color: 'blue-grey-darken-1', icon: 'mdi-car' },
+  { value: 'hotel', label: '住宿', color: 'purple-darken-1', icon: 'mdi-bed' },
+  { value: 'activity', label: '活動', color: 'green-darken-1', icon: 'mdi-run' },
+]
+
+const transportModeOptions: { value: TransportMode; label: string }[] = [
+  { value: 'walk', label: '步行' },
+  { value: 'drive', label: '自駕' },
+  { value: 'train', label: '電車' },
+  { value: 'bus', label: '巴士' },
+  { value: 'flight', label: '飛行' },
+  { value: 'taxi', label: '計程車' },
+]
+
+const toggleTag = (tag: JourneyTag) => {
+  const idx = form.tags.indexOf(tag)
+  if (idx >= 0) {
+    form.tags.splice(idx, 1)
+  } else {
+    form.tags.push(tag)
+  }
+}
 
 const resetForm = () => {
   const normalizedTickets = normalizeTickets(props.initialData?.tickets)
@@ -215,6 +295,11 @@ const resetForm = () => {
   form.hasTickets = Boolean(normalizedTickets)
   form.ticketDirection = normalizedTickets?.selectedTrip ?? 'outbound'
   form.tickets = normalizedTickets ?? createDefaultTickets()
+  form.tags = [...(props.initialData?.tags ?? [])]
+  form.hasTransport = Boolean(props.initialData?.transport)
+  form.transportMode = props.initialData?.transport?.mode ?? 'drive'
+  form.transportDuration = props.initialData?.transport?.duration ?? ''
+  form.transportNote = props.initialData?.transport?.note ?? ''
 }
 
 const selectedTicket = computed(() => form.tickets[form.ticketDirection])
@@ -251,6 +336,14 @@ const handleSave = () => {
       ? {
           ...form.tickets,
           selectedTrip: form.ticketDirection,
+        }
+      : null,
+    tags: [...form.tags],
+    transport: form.hasTransport
+      ? {
+          mode: form.transportMode,
+          duration: form.transportDuration,
+          note: form.transportNote || undefined,
         }
       : null,
   })

@@ -25,6 +25,7 @@
     "xlsx-js-style": "^1.2.0"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.21",
     "@types/node": "^25.6.2",
     "@vitejs/plugin-vue": "^6.0.2",
     "sass": "^1.98.0",

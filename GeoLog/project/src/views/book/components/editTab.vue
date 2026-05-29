@@ -189,6 +189,45 @@
                 hide-details="auto"
               />
             </v-col>
+
+            <!-- 標籤選擇 -->
+            <v-col cols="12">
+              <p class="text-caption text-blue-grey-lighten-3 mb-2">標籤</p>
+              <div class="d-flex flex-wrap ga-2">
+                <v-chip v-for="tag in availableTags" :key="tag.value" :color="tag.color"
+                  :variant="item.tags.includes(tag.value) ? 'flat' : 'outlined'"
+                  :prepend-icon="tag.icon" size="x-small" class="cursor-pointer"
+                  @click="toggleItemTag(item, tag.value)">
+                  {{ tag.label }}
+                </v-chip>
+              </div>
+            </v-col>
+
+            <!-- 交通方式 -->
+            <v-col cols="12">
+              <div class="d-flex align-center ga-3 mb-2">
+                <p class="text-caption text-blue-grey-lighten-3">前往下一站的交通</p>
+                <v-switch v-model="item.hasTransport" color="orange" density="compact" hide-details
+                  class="flex-grow-0" />
+              </div>
+              <v-row v-if="item.hasTransport" dense>
+                <v-col cols="4">
+                  <v-select v-model="item.transportMode" :items="transportModeOptions" item-title="label"
+                    item-value="value" label="方式" variant="outlined" density="compact" color="orange"
+                    base-color="orange" hide-details="auto" />
+                </v-col>
+                <v-col cols="4">
+                  <v-text-field v-model="item.transportDuration" label="預估時間" variant="outlined"
+                    density="compact" color="orange" base-color="orange" hide-details="auto"
+                    placeholder="30 分鐘" />
+                </v-col>
+                <v-col cols="4">
+                  <v-text-field v-model="item.transportNote" label="備註" variant="outlined"
+                    density="compact" color="orange" base-color="orange" hide-details="auto"
+                    placeholder="選填" />
+                </v-col>
+              </v-row>
+            </v-col>
           </v-row>
         </div>
       </v-card-text>
@@ -216,7 +255,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import TimePicker from '@/components/shared/timePicker.vue'
 import DatePicker from '@/components/shared/datePicker.vue'
-import type { JourneyDay, JourneyItem, JourneyTicketInput, JourneyAccommodationInput } from '../types'
+import type { JourneyDay, JourneyItem, JourneyTicketInput, JourneyAccommodationInput, JourneyTag, TransportMode } from '../types'
 
 type DialogMode = 'create' | 'edit'
 
@@ -231,6 +270,38 @@ type ItemDraft = {
   hasAccommodation: boolean
   tickets: JourneyTicketInput
   accommodation: JourneyAccommodationInput
+  tags: JourneyTag[]
+  hasTransport: boolean
+  transportMode: TransportMode
+  transportDuration: string
+  transportNote: string
+}
+
+const availableTags: { value: JourneyTag; label: string; color: string; icon: string }[] = [
+  { value: 'food', label: '美食', color: 'red-darken-1', icon: 'mdi-silverware-fork-knife' },
+  { value: 'attraction', label: '景點', color: 'blue-darken-1', icon: 'mdi-camera' },
+  { value: 'shopping', label: '購物', color: 'pink-darken-1', icon: 'mdi-shopping' },
+  { value: 'transport', label: '交通', color: 'blue-grey-darken-1', icon: 'mdi-car' },
+  { value: 'hotel', label: '住宿', color: 'purple-darken-1', icon: 'mdi-bed' },
+  { value: 'activity', label: '活動', color: 'green-darken-1', icon: 'mdi-run' },
+]
+
+const transportModeOptions: { value: TransportMode; label: string }[] = [
+  { value: 'walk', label: '步行' },
+  { value: 'drive', label: '自駕' },
+  { value: 'train', label: '電車' },
+  { value: 'bus', label: '巴士' },
+  { value: 'flight', label: '飛行' },
+  { value: 'taxi', label: '計程車' },
+]
+
+const toggleItemTag = (item: ItemDraft, tag: JourneyTag) => {
+  const idx = item.tags.indexOf(tag)
+  if (idx >= 0) {
+    item.tags.splice(idx, 1)
+  } else {
+    item.tags.push(tag)
+  }
 }
 
 const props = withDefaults(defineProps<{
@@ -311,6 +382,11 @@ const createEmptyItemDraft = (): ItemDraft => ({
   hasAccommodation: false,
   tickets: null,
   accommodation: null,
+  tags: [],
+  hasTransport: false,
+  transportMode: 'drive',
+  transportDuration: '',
+  transportNote: '',
 })
 
 const toItemDraft = (item: JourneyItem): ItemDraft => {
@@ -327,6 +403,11 @@ const toItemDraft = (item: JourneyItem): ItemDraft => {
     hasAccommodation: Boolean(item.accommodation),
     tickets: item.tickets ?? null,
     accommodation: item.accommodation ?? null,
+    tags: [...(item.tags ?? [])],
+    hasTransport: Boolean(item.transport),
+    transportMode: item.transport?.mode ?? 'drive',
+    transportDuration: item.transport?.duration ?? '',
+    transportNote: item.transport?.note ?? '',
   }
 }
 
@@ -382,7 +463,9 @@ const draftHasContent = (draft: ItemDraft) =>
   draft.address.trim() !== '' ||
   draft.note.trim() !== '' ||
   draft.hasTickets ||
-  draft.hasAccommodation
+  draft.hasAccommodation ||
+  draft.tags.length > 0 ||
+  draft.hasTransport
 
 const toJourneyItem = (draft: ItemDraft): JourneyItem => {
   const startTime = draft.startTime.trim()
@@ -397,6 +480,15 @@ const toJourneyItem = (draft: ItemDraft): JourneyItem => {
     note: draft.note.trim() || null,
     tickets: draft.hasTickets ? draft.tickets || true : null,
     accommodation: draft.hasAccommodation ? draft.accommodation || true : null,
+    tags: [...draft.tags],
+    transport: draft.hasTransport
+      ? {
+          mode: draft.transportMode,
+          duration: draft.transportDuration,
+          note: draft.transportNote || undefined,
+        }
+      : null,
+    visited: false,
   }
 }
 

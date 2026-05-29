@@ -1,34 +1,15 @@
 <template>
+  <EditMode
+    v-model="editMode"
+    :length="props.days.length"
+    @open-edit-tab="emit('open-edit-tab')"
+    @add-journey="emit('add-journey')"/>
 
-  <v-card class="book-workspace" color="transparent"  elevation="0">
-    <EditMode
-      v-model="editMode"
-      :length="props.days.length"
-      @open-edit-tab="emit('open-edit-tab')"
-      @add-journey="emit('add-journey')"/>
-
-    <v-card class="top pa-5 border mt-4 rounded-lg"  elevation="5">
-      <div >
-        <p class="text-h3 font-weight-bold text-white2 ma-0">{{ tripTitle }}</p>
-
-        <p class="text-white2 ma-0">{{ tripVersion }}</p>
-      </div>
-    </v-card>
-
-    <v-card class="book-tabs mt-5" elevation="0" color="transparent">
-      <v-tabs v-model="currentTab" class="text-white2 tab" show-arrows>
-        <v-tab
-          v-for="(day, idx) in props.days"
-          :key="day.id"
-          class="rounded-lg tabs"
-          color="orange"
-          :text="day.tabText"
-          :value="idx + 1"
-        />
-      </v-tabs>
-      <v-divider color="orange-darken-4" opacity="1" />
-    </v-card>
+  <v-card class="top py-3 px-5 book-workspace" color="transparent"  elevation="0">
+    <p class="font-weight-bold text-white2 ma-0 text-title-large">{{ tripTitle }}</p>
+    <p class="text-white text-body-small opacity-80">2025/03/19(三) - 2025/03/23(日)</p>
   </v-card>
+
 
 </template>
 
@@ -81,7 +62,11 @@ watch(editMode, value => {
 
 <style scoped lang="scss">
 .top {
-    background-color: rgba(0, 157, 230, 0.205) !important;
-    border-radius: 16px;
+  background-color: rgba(0, 157, 230, 0.205) !important;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.082);
+  backdrop-filter: blur(10px);
 }
+
+
 </style>
