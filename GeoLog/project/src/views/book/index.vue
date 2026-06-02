@@ -1,27 +1,38 @@
 <template>
-  <v-container fluid class="book-root ">
-    <section class="workspace">
+  <v-container fluid class="book-root d-flex flex-wrap px-0 ">
+
+    <div class="left">
+      <section class="workspace">
       <WorkSpace v-model:tab="tab" v-model:is-edit-mode="isEditMode" :days="visibleJourneyTabs"
         @open-edit-tab="editTabDialog = true"
         @add-journey="requestAddJourney" />
-    </section>
+      </section>
 
-    <section class="w-90 mx-auto">
-      <SelectDate v-model:tab="tab" :is-edit-mode="isEditMode" :days="visibleJourneyTabs"
-        @open-edit-tab="editTabDialog = true" />
-    </section>
+      <section class="page">
+        <SelectDate
+          v-model:tab="tab"
+          :is-edit-mode="isEditMode"
+          :days="visibleJourneyTabs"
+          @open-edit-tab="editTabDialog = true" />
 
+        <v-window v-model="tab" class="date">
+          <v-window-item v-for="(day, idx) in visibleJourneyTabs" :key="day.id" :value="idx + 1">
+            <Journey
+              :day="day"
+              :is-edit-mode="isEditMode"
+              :add-request-key="tab === idx + 1 ? addJourneyRequestKey : 0"
+            />
+          </v-window-item>
+        </v-window>
+      </section>
+    </div>
 
-    <section class="page">
-      <v-window v-model="tab" class="date">
-        <v-window-item v-for="(day, idx) in visibleJourneyTabs" :key="day.id" :value="idx + 1">
-          <Journey
-            :day="day"
-            :is-edit-mode="isEditMode"
-            :add-request-key="tab === idx + 1 ? addJourneyRequestKey : 0"
-          />
-        </v-window-item>
-      </v-window>
+    <section v-if="currentJourneyDay" class="side-panel w-30 d-flex flex-wrap px-5 ga-4">
+      <JourneyCountdownCard class="w-100" :date="currentJourneyDay.date" />
+      <JourneyChecklistCard class="w-100" />
+      <JourneyProgressCard class="w-100" :items="sortedCurrentItems" />
+      <JourneyOverviewCard class="w-100" :items="sortedCurrentItems" />
+      <JourneyMapCard class="w-100" :items="sortedCurrentItems" />
     </section>
 
     <!-- <FlightTicket /> -->
@@ -49,6 +60,12 @@ import WorkSpace from './components/workSpace.vue'
 import { journeyTabs } from './mockJourneyData'
 import type { JourneyDay } from './types'
 
+import JourneyChecklistCard from './components/sidebar/JourneyChecklistCard.vue'
+import JourneyCountdownCard from './components/sidebar/JourneyCountdownCard.vue'
+import JourneyMapCard from './components/sidebar/JourneyMapCard.vue'
+import JourneyOverviewCard from './components/sidebar/JourneyOverviewCard.vue'
+import JourneyProgressCard from './components/sidebar/JourneyProgressCard.vue'
+
 const cloneJourneyDays = (days: JourneyDay[]) => JSON.parse(JSON.stringify(days)) as JourneyDay[]
 
 const journeyDays = ref<JourneyDay[]>(cloneJourneyDays(journeyTabs))
@@ -60,6 +77,9 @@ const addJourneyRequestKey = ref(0)
 
 const visibleJourneyTabs = computed(() => journeyDays.value.slice(0, visibleDayCount.value))
 const currentJourneyDay = computed(() => visibleJourneyTabs.value[tab.value - 1] ?? null)
+const sortedCurrentItems = computed(() =>
+  [...(currentJourneyDay.value?.items ?? [])].sort((a, b) => a.time.localeCompare(b.time))
+)
 
 const requestAddJourney = () => {
   if (!isEditMode.value || visibleJourneyTabs.value.length === 0) return
@@ -102,15 +122,37 @@ watch(tab, () => {
 }
 
 .book-root {
-  overflow-x: hidden;
-  height: 100vh;
+  // overflow: visible;
+  overflow: auto;
+  // height: 100% !important;
   // background: linear-gradient(180deg, #1e1e1e 0%, #121212 100%);
+  .left {
+  // border: 1px solid rgba(255, 102, 0, 0.5) !important;
+    width: 70%;
+    height: 100%;
+    padding: 0 50px;
+    @include breakpoint(960px) {
+      width: 100%;
+      padding: 0 0px;
+      // background-color: rgba(0, 157, 230, 0.205) !important;
+    }
+  }
+  .side-panel {
+    // width: 400px;
+    width: 30%; 
+    @include breakpoint(960px) {
+      width: 95%;
+      padding: 0 0px;
+      margin: 0px auto;
+      // background-color: rgba(0, 157, 230, 0.205) !important;
+    }
+  }
 }
 
 .workspace {
   // position: fixed; 
   z-index: 900;
-  width: 90%;
+  width: 100%;
   // top: 10px;
   left: 0;
   right: 0;
@@ -119,14 +161,17 @@ watch(tab, () => {
   @include breakpoint(960px) {
     width: 90%;
   }
-
 }
 
+
+
 .page {
-  width: 90%;
-  margin: 0px auto 0;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  // background: rgba(255, 255, 255, 0.05);
   // position: fixed;
-  // padding: 0 15px;。
+  // padding: 0 15px;
   top: 280px;
   left: 0;
   right: 0;
@@ -136,15 +181,15 @@ watch(tab, () => {
   &::-webkit-scrollbar {
     width: 5px !important;
   }
-
   @include breakpoint(960px) {
-    width: 90%;
+    width: 95%;
+    margin: 0 auto;
   }
   @include breakpoint(768px) {
     width: 95%;
   }
-
 }
+
 
 @media (max-width: 600px) {
   .workspace {

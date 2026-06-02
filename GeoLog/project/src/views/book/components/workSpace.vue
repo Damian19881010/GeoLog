@@ -67,6 +67,4 @@ watch(editMode, value => {
   border: 1px solid rgba(255, 255, 255, 0.082);
   backdrop-filter: blur(10px);
 }
-
-
 </style>

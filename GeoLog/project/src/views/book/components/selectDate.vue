@@ -1,5 +1,5 @@
 <template>
-      <v-tabs 
+  <v-tabs 
     v-model="currentTab" 
     class="text-white2 tab border-orange border-opacity-100 " 
     show-arrows

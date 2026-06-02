@@ -34,8 +34,7 @@ const isContainerized = computed(() => route.meta.containerized !== false)
 
 .default-layout {
   min-height: 100vh;
-
-  overflow: hidden;
+  // border-top: 1px solid rgba(255, 102, 0, 0.5) !important;
 }
 
 
