@@ -1,8 +1,9 @@
 <template>
+  <!-- 首頁的成就與等級系統 -->
   <section id="achievements" class="achievement-preview-section">
     <div class="section-heading">
       <p>Gamification</p>
-      <h2>成就與等級系統</h2>
+      <h2>成就與等級系</h2>
     </div>
 
     <div class="achievement-toolbar">

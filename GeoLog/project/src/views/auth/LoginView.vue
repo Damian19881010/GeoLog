@@ -411,7 +411,7 @@ const handleAdminLogin = async () => {
   isLoading.value = true
   try {
     await new Promise(r => setTimeout(r, 350))
-    await finalizeLogin('super-admin-session', '/dashboard')
+    await finalizeLogin('super-admin-session', '/')
   } finally {
     isLoading.value = false
     loginAction.value = null

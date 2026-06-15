@@ -12,18 +12,12 @@
         variant="outlined"
         prepend-icon="mdi-arrow-left"
         :to="{ name: 'home', hash: '#achievements' }"
-      >
-        返回首頁
-      </v-btn>
+        text="返回首頁"/>
     </section>
 
     <section class="level-layout">
       <article class="level-card">
-        <div
-          class="level-avatar"
-          :style="{ '--level-progress': `${levelInfo.progressPercent}%` }"
-          aria-label="Current level"
-        >
+        <div class="level-avatar" :style="{ '--level-progress': `${levelInfo.progressPercent}%` }" aria-label="Current level">
           <span>LV</span>
           <strong>{{ levelInfo.level }}</strong>
         </div>
@@ -63,38 +57,118 @@
       <div class="achievement-toolbar">
         <div>
           <span class="panel-label">Achievement Matrix</span>
-          <h2>{{ unlockedAchievementCount }} / {{ achievements.length }} 已解鎖</h2>
+          <h2>{{ filteredUnlockedAchievementCount }} / {{ filteredAchievements.length }} 已解鎖</h2>
         </div>
         <div class="matrix-progress" aria-label="Achievement unlock progress">
-          <span :style="{ width: `${unlockedAchievementPercent}%` }"></span>
+          <span :style="{ width: `${filteredUnlockedAchievementPercent}%` }"></span>
         </div>
       </div>
-
-      <div class="achievement-grid">
+      <div class="achievement-filters">
+        <v-select
+          v-model="selectedCountryFilter"
+          hide-details="auto"
+          class="mb-5"
+          :items="countryFilterItems"
+          label="國家"
+          max-width="300"
+          variant="outlined"
+        />
+        <v-select
+          v-model="selectedCompletionFilter"
+          hide-details="auto"
+          class="mb-5"
+          :items="completionFilterItems"
+          label="完成度"
+          max-width="300"
+          variant="outlined"
+        />
+      </div>
+ 
+      <div v-if="filteredAchievements.length > 0" class="achievement-grid">
         <AchievementCard
-          v-for="achievement in achievements"
+          v-for="achievement in filteredAchievements"
           :key="achievement.id"
           :achievement="achievement"
         />
+      </div>
+      <div v-else class="achievement-empty">
+        沒有符合條件的成就
       </div>
     </section>
   </main>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import AchievementCard from '@/components/gamification/AchievementCard.vue'
 import { getLevelPrivilege, getLevelRank } from '@/data/gamification'
 import { useGamification } from '@/composables/useGamification'
+import { getLocationLabel } from '@/views/book/locationConfig'
+
+const ALL_COUNTRIES = 'all'
+const GENERAL_COUNTRY = 'general'
+
+type CompletionFilter = 'all' | 'unlocked' | 'locked'
 
 const {
   achievements,
   expActions,
   levelInfo,
   playerTotalExp,
-  unlockedAchievementCount,
-  unlockedAchievementPercent,
 } = useGamification()
+
+const selectedCountryFilter = ref(ALL_COUNTRIES)
+const selectedCompletionFilter = ref<CompletionFilter>('all')
+
+const completionFilterItems = [
+  { title: '全部', value: 'all' },
+  { title: '已解鎖', value: 'unlocked' },
+  { title: '未解鎖', value: 'locked' },
+] as const
+
+const countryFilterItems = computed(() => {
+  const countries = Array.from(
+    new Set(achievements.value.map((achievement) => achievement.country).filter(Boolean)),
+  ) as string[]
+
+  return [
+    { title: '全部國家', value: ALL_COUNTRIES },
+    { title: '通用', value: GENERAL_COUNTRY },
+    ...countries
+      .sort((left, right) => getLocationLabel(left).localeCompare(getLocationLabel(right), 'zh-Hant'))
+      .map((country) => ({
+        title: getLocationLabel(country),
+        value: country,
+      })),
+  ]
+})
+
+const filteredAchievements = computed(() =>
+  achievements.value.filter((achievement) => {
+    const matchesCountry =
+      selectedCountryFilter.value === ALL_COUNTRIES ||
+      (selectedCountryFilter.value === GENERAL_COUNTRY
+        ? !achievement.country
+        : achievement.country === selectedCountryFilter.value)
+
+    const matchesCompletion =
+      selectedCompletionFilter.value === 'all' ||
+      (selectedCompletionFilter.value === 'unlocked'
+        ? achievement.isUnlocked
+        : !achievement.isUnlocked)
+
+    return matchesCountry && matchesCompletion
+  }),
+)
+
+const filteredUnlockedAchievementCount = computed(() =>
+  filteredAchievements.value.filter((achievement) => achievement.isUnlocked).length,
+)
+
+const filteredUnlockedAchievementPercent = computed(() => {
+  if (filteredAchievements.value.length === 0) return 0
+  return Math.round((filteredUnlockedAchievementCount.value / filteredAchievements.value.length) * 100)
+})
 
 const currentRank = computed(() => getLevelRank(levelInfo.value.level))
 const currentPrivilege = computed(() => getLevelPrivilege(levelInfo.value.level))
@@ -367,6 +441,16 @@ const nextLevelRemaining = computed(() => {
   }
 }
 
+.achievement-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  :deep(.v-input) {
+    flex: 1 1 220px;
+  }
+}
+
 .achievement-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -379,6 +463,17 @@ const nextLevelRemaining = computed(() => {
   @include breakpoint(420px) {
     grid-template-columns: 1fr;
   }
+}
+
+.achievement-empty {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+  border: 1px solid rgba(245, 251, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(245, 251, 255, 0.08);
+  color: rgba(245, 251, 255, 0.68);
+  font-weight: 700;
 }
 
 @include breakpoint(600px) {

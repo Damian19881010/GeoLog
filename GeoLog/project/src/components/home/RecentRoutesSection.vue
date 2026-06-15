@@ -6,7 +6,7 @@
     </div>
   
     <v-container class="pa-0">
-      <v-row dense>
+      <v-row density="comfortable">
         <v-col v-for="route in topRoutes" :key="route.id" cols="12" sm="6" md="6" lg="4">
           <v-card :to="{ name: 'book-detail', params: { id: route.id } }" class="route-pill w-100" hoverable elevation="2" >
             <div>

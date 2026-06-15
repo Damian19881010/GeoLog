@@ -5,6 +5,7 @@ import type { JourneyDay, JourneyItem, Trip } from '@/views/book/types'
 export type AchievementCard = AchievementCardProps & {
   category: string
   expReward: number
+  country?: string
 }
 
 export type GamificationContext = {
@@ -58,7 +59,73 @@ const EUROPE_COUNTRIES = new Set([
   'United Kingdom',
 ])
 
-const ISLAND_CITIES = new Set(['Cebu', 'Melbourne', 'Okinawa', 'Sydney'])
+const ASIA_COUNTRIES = new Set([
+  'Japan',
+  'South Korea',
+  'Thailand',
+  'Vietnam',
+  'Singapore',
+  'Malaysia',
+  'Philippines',
+  'Indonesia',
+  'Taiwan',
+])
+
+const TAIWAN_CITIES = new Set([
+  'Taipei',
+  'NewTaipei',
+  'Taoyuan',
+  'Taichung',
+  'Tainan',
+  'Kaohsiung',
+  'Taipei City',
+  'New Taipei City',
+  'Taoyuan City',
+  'Taichung City',
+  'Tainan City',
+  'Kaohsiung City',
+  'Hsinchu County',
+  'Miaoli County',
+  'Changhua County',
+  'Nantou County',
+  'Yunlin County',
+  'Chiayi County',
+  'Pingtung County',
+  'Yilan County',
+  'Hualien County',
+  'Taitung County',
+  'Penghu County',
+  'Kinmen County',
+  'Lienchiang County',
+  'Keelung City',
+  'Hsinchu City',
+  'Chiayi City',
+])
+
+const TAIWAN_CITY_TARGET = 22
+
+const ISLAND_CITIES = new Set([
+  'Cebu',
+  'Melbourne',
+  'Okinawa',
+  'Okinawa Prefecture',
+  'Sydney',
+  'Penghu County',
+  'Kinmen County',
+  'Lienchiang County',
+])
+const OKINAWA_CITIES = new Set(['Okinawa', 'Okinawa Prefecture'])
+const TOKYO_CITIES = new Set(['Tokyo', 'Tokyo Metropolis'])
+const SHIKOKU_CITIES = new Set([
+  'Tokushima',
+  'Kagawa',
+  'Kochi',
+  'Ehime',
+  'Tokushima Prefecture',
+  'Kagawa Prefecture',
+  'Kochi Prefecture',
+  'Ehime Prefecture',
+])
 
 const clamp = (value: number, min: number, max: number): number => {
   return Math.min(Math.max(value, min), max)
@@ -72,17 +139,17 @@ const countTripsByCountry = (trips: Trip[], country: string): number => {
   return trips.filter((trip) => trip.country === country).length
 }
 
-const countTripsByCity = (trips: Trip[], city: string): number => {
-  return trips.filter((trip) => trip.city === city).length
+const countTripsByCities = (trips: Trip[], cities: ReadonlySet<string>): number => {
+  return trips.filter((trip) => cities.has(trip.city)).length
 }
 
 const countUnique = (values: string[]): number => {
   return new Set(values.filter(Boolean)).size
 }
 
-const sumDaysByCity = (trips: Trip[], city: string): number => {
+const sumDaysByCities = (trips: Trip[], cities: ReadonlySet<string>): number => {
   return trips
-    .filter((trip) => trip.city === city)
+    .filter((trip) => cities.has(trip.city))
     .reduce((total, trip) => total + Math.max(trip.days, 0), 0)
 }
 
@@ -111,6 +178,18 @@ const countIslandTrips = (trips: Trip[]): number => {
 
 const countEuropeanCountries = (trips: Trip[]): number => {
   return countUnique(trips.filter((trip) => EUROPE_COUNTRIES.has(trip.country)).map((trip) => trip.country))
+}
+
+const countAsianCountries = (trips: Trip[]): number => {
+  return countUnique(trips.filter((trip) => ASIA_COUNTRIES.has(trip.country)).map((trip) => trip.country))
+}
+
+const countTaiwanCities = (trips: Trip[]): number => {
+  return countUnique(
+    trips
+      .filter((trip) => trip.country === 'Taiwan' && TAIWAN_CITIES.has(trip.city))
+      .map((trip) => trip.city),
+  )
 }
 
 export const LEVEL_RANKS = {
@@ -162,7 +241,7 @@ export const EXP_ACTIONS = [
 export const ACHIEVEMENT_DEFINITIONS = [
   {
     id: 'first-trip',
-    title: '第一段旅程',
+    title: '初探世界',
     description: '建立至少 1 筆旅程資料，讓 GeoLog 有第一個座標。',
     category: CATEGORIES.journey,
     iconType: 'minimal-pin',
@@ -172,7 +251,7 @@ export const ACHIEVEMENT_DEFINITIONS = [
   },
   {
     id: 'trip-collector-10',
-    title: '十趟旅程蒐集家',
+    title: '旅程蒐集家',
     description: '累積 10 筆旅程資料，形成穩定的旅行資料庫。',
     category: CATEGORIES.journey,
     iconType: 'minimal-pin',
@@ -182,7 +261,7 @@ export const ACHIEVEMENT_DEFINITIONS = [
   },
   {
     id: 'trip-explorer-20',
-    title: '二十趟探索者',
+    title: '旅程探索者',
     description: '累積 20 筆旅程資料，持續擴張自己的旅圖。',
     category: CATEGORIES.journey,
     iconType: 'minimal-pin',
@@ -192,7 +271,7 @@ export const ACHIEVEMENT_DEFINITIONS = [
   },
   {
     id: 'country-collector-10',
-    title: '十國收藏家',
+    title: '國家收藏家',
     description: '旅程資料涵蓋 10 個不同國家。',
     category: CATEGORIES.geography,
     iconType: 'dot-globe',
@@ -202,7 +281,7 @@ export const ACHIEVEMENT_DEFINITIONS = [
   },
   {
     id: 'city-collector-12',
-    title: '十二城漫遊者',
+    title: '城市收藏家',
     description: '旅程資料涵蓋 12 個不同城市。',
     category: CATEGORIES.geography,
     iconType: 'dot-globe',
@@ -221,6 +300,16 @@ export const ACHIEVEMENT_DEFINITIONS = [
     getCurrent: ({ trips }) => countEuropeanCountries(trips),
   },
   {
+    id: 'asia-route-5',
+    title: '亞洲路線採樣員',
+    description: '旅程資料涵蓋 5 個亞洲國家。',
+    category: CATEGORIES.geography,
+    iconType: 'dot-globe',
+    expReward: 700,
+    target: 5,
+    getCurrent: ({ trips }) => countAsianCountries(trips),
+  },
+  {
     id: 'island-drifter',
     title: '島嶼漫遊者',
     description: '累積 4 筆島嶼或海港城市旅程。',
@@ -231,10 +320,23 @@ export const ACHIEVEMENT_DEFINITIONS = [
     getCurrent: ({ trips }) => countIslandTrips(trips),
   },
   {
+    id: 'formosa-loop',
+    title: '環島福爾摩沙',
+    description: '累積台灣所有城市的旅程資料，包含離島與海港城市。',
+    category: CATEGORIES.geography,
+    country: 'Taiwan',
+    iconType: 'dot-globe',
+    expReward: 500,
+    target: TAIWAN_CITY_TARGET,
+    getCurrent: ({ trips }) => countTaiwanCities(trips),
+  },
+  
+  {
     id: 'japan-traveler',
     title: '日本初訪旅人',
     description: '建立至少 1 筆日本旅程。',
     category: CATEGORIES.japan,
+    country: 'Japan',
     iconType: 'minimal-pin',
     expReward: 200,
     target: 1,
@@ -245,6 +347,7 @@ export const ACHIEVEMENT_DEFINITIONS = [
     title: '日本路線蒐集家',
     description: '累積 4 筆日本旅程資料。',
     category: CATEGORIES.japan,
+    country: 'Japan',
     iconType: 'minimal-pin',
     expReward: 500,
     target: 4,
@@ -255,41 +358,44 @@ export const ACHIEVEMENT_DEFINITIONS = [
     title: '沖繩旅人',
     description: '沖繩旅程累積至少 3 天。',
     category: CATEGORIES.japan,
+    country: 'Japan',
     iconType: 'minimal-pin',
     expReward: 200,
     target: 3,
-    getCurrent: ({ trips }) => sumDaysByCity(trips, 'Okinawa'),
+    getCurrent: ({ trips }) => sumDaysByCities(trips, OKINAWA_CITIES),
   },
   {
     id: 'okinawa-deep-diver',
     title: '沖繩深度探索者',
     description: '沖繩旅程累積至少 8 天。',
     category: CATEGORIES.japan,
+    country: 'Japan',
     iconType: 'minimal-pin',
     expReward: 500,
     target: 8,
-    getCurrent: ({ trips }) => sumDaysByCity(trips, 'Okinawa'),
+    getCurrent: ({ trips }) => sumDaysByCities(trips, OKINAWA_CITIES),
   },
   {
     id: 'tokyo-sightseer',
     title: '東京景點巡禮',
     description: '建立至少 1 筆東京旅程。',
     category: CATEGORIES.japan,
+    country: 'Japan',
     iconType: 'radar-ring',
     expReward: 300,
     target: 1,
-    getCurrent: ({ trips }) => countTripsByCity(trips, 'Tokyo'),
+    getCurrent: ({ trips }) => countTripsByCities(trips, TOKYO_CITIES),
   },
   {
     id: 'shikoku-traveler',
     title: '四國旅人',
     description: '建立至少 1 筆四國城市旅程。',
     category: CATEGORIES.japan,
+    country: 'Japan',
     iconType: 'minimal-pin',
     expReward: 300,
     target: 1,
-    getCurrent: ({ trips }) =>
-      ['Tokushima', 'Kagawa', 'Kochi', 'Ehime'].some((city) => countTripsByCity(trips, city) > 0) ? 1 : 0,
+    getCurrent: ({ trips }) => countTripsByCities(trips, SHIKOKU_CITIES) > 0 ? 1 : 0,
   },
   {
     id: 'journey-planner',
@@ -346,6 +452,7 @@ export const ACHIEVEMENT_DEFINITIONS = [
     title: '澳洲雙城線',
     description: '澳洲旅程涵蓋 2 個不同城市。',
     category: CATEGORIES.geography,
+    country: 'Australia',
     iconType: 'dot-globe',
     expReward: 500,
     target: 2,
@@ -369,6 +476,7 @@ export const resolveAchievements = (context: GamificationContext): AchievementCa
     const current = clamp(Math.floor(definition.getCurrent(context)), 0, definition.target)
     const isUnlocked = current >= definition.target
     const isSecret = ('isSecret' in definition ? definition.isSecret : undefined) ?? definition.category === CATEGORIES.secret
+    const country = 'country' in definition ? definition.country : undefined
 
     return {
       id: definition.id,
@@ -376,6 +484,7 @@ export const resolveAchievements = (context: GamificationContext): AchievementCa
       description: definition.description,
       iconType: definition.iconType,
       category: definition.category,
+      country,
       expReward: definition.expReward,
       isSecret,
       isUnlocked,
