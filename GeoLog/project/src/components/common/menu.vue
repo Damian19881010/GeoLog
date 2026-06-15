@@ -20,6 +20,12 @@
             to="/dashboard"
             @click="drawer = false">
         </v-list-item>
+        <v-list-item
+            prepend-icon="mdi-trophy-award"
+            title="Achievements"
+            to="/achievements"
+            @click="drawer = false">
+        </v-list-item>
         <v-list-item 
             prepend-icon="mdi-notebook-plus-outline"
             title="Book"

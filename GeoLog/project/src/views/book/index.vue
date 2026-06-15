@@ -57,8 +57,8 @@ import EditTab from './components/editTab.vue'
 import Journey from './components/journey.vue'
 import SelectDate from './components/selectDate.vue'
 import WorkSpace from './components/workSpace.vue'
-import { journeyTabs } from './mockJourneyData'
 import type { JourneyDay } from './types'
+import { useJourneyDays } from './useJourneyDays'
 
 import JourneyChecklistCard from './components/sidebar/JourneyChecklistCard.vue'
 import JourneyCountdownCard from './components/sidebar/JourneyCountdownCard.vue'
@@ -66,9 +66,7 @@ import JourneyMapCard from './components/sidebar/JourneyMapCard.vue'
 import JourneyOverviewCard from './components/sidebar/JourneyOverviewCard.vue'
 import JourneyProgressCard from './components/sidebar/JourneyProgressCard.vue'
 
-const cloneJourneyDays = (days: JourneyDay[]) => JSON.parse(JSON.stringify(days)) as JourneyDay[]
-
-const journeyDays = ref<JourneyDay[]>(cloneJourneyDays(journeyTabs))
+const { journeyDays } = useJourneyDays()
 const visibleDayCount = ref(journeyDays.value.length)
 const tab = ref(1)
 const isEditMode = ref(false)

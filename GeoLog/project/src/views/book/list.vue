@@ -148,8 +148,8 @@ import {
   toCityValue,
   toCountryValue,
 } from './locationConfig'
-import mockTripData from './mockTripData.js'
 import type { Trip } from './types'
+import { useTrips } from './useTrips'
 
 const createDialog = ref(false)
 const selectedCountry = ref<string | null>(null)
@@ -442,7 +442,7 @@ const getTripDays = (startDate: string, endDate: string) =>
 
 const router = useRouter()
 
-const trips = ref<Trip[]>(mockTripData.map((trip) => ({ ...trip })))
+const { trips } = useTrips()
 
 const dialogMode = computed(() => editingTripId.value === null ? 'create' : 'edit')
 

@@ -6,6 +6,7 @@
 import { ref, onMounted, watch, onBeforeUnmount } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import { cartoDarkTileOptions, cartoDarkTileUrl } from '@/utils/mapTiles'
 import type { JourneyItem } from '../types'
 
 const props = defineProps<{
@@ -34,14 +35,10 @@ const initMap = () => {
 
   map = L.map(mapContainer.value, {
     zoomControl: false,
-    attributionControl: false,
+    attributionControl: true,
   }).setView([26.2, 127.68], 12)
 
-  // CartoDB Dark Matter tile layer
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    subdomains: 'abcd',
-    maxZoom: 19,
-  }).addTo(map)
+  L.tileLayer(cartoDarkTileUrl, cartoDarkTileOptions).addTo(map)
 
   L.control.zoom({ position: 'bottomright' }).addTo(map)
 
@@ -113,6 +110,21 @@ onBeforeUnmount(() => {
   min-height: 400px;
   border-radius: 12px;
   overflow: hidden;
+}
+
+.leaflet-map :deep(.leaflet-tile) {
+  filter: saturate(0.88) contrast(1.08);
+}
+
+.leaflet-map :deep(.leaflet-control-attribution) {
+  background: rgba(5, 10, 28, 0.72);
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 10px;
+  backdrop-filter: blur(8px);
+}
+
+.leaflet-map :deep(.leaflet-control-attribution a) {
+  color: #8fdfff;
 }
 </style>
 

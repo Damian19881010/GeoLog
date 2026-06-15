@@ -44,6 +44,12 @@ const router = createRouter({
           component: () => import('@/views/DashboardView.vue'),
         },
         {
+          path: 'achievements',
+          name: 'achievements',
+          meta: { title: 'Achievements', containerized: true },
+          component: () => import('@/views/AchievementsView.vue'),
+        },
+        {
           path: 'book',
           name: 'book',
           meta: { title: 'Book', containerized: false },
