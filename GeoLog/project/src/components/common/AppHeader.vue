@@ -1,6 +1,6 @@
 <template>
   <v-container class="header pa-0 d-flex align-center" fluid>
-    <v-toolbar class="px-8 centerpart" density="compact" height="90" rounded="pill">
+    <v-toolbar class="px-8 centerpart" density="compact" height="80" rounded="pill">
       <template #prepend>
         <v-btn class="menu-toggle-btn" icon="mdi-menu" color="orange21" variant="text" @click="emit('toggle-menu')" />
         <router-link to="/" class="text-decoration-none">
@@ -13,7 +13,8 @@
       </template>
 
       <template #append>
-        <div class="d-flex ga-3">
+        <div class="d-flex align-center ga-3">
+          <!-- 子選單 -->
           <v-menu location="bottom end" offset="10" transition="scale-transition">
             <template #activator="{ props }">
               <v-btn
@@ -41,6 +42,7 @@
               </v-list-item>
             </v-list>
           </v-menu>
+          <!-- 系統通知 -->
           <v-menu location="bottom end" offset="10" transition="scale-transition" :close-on-content-click="false">
             <template #activator="{ props }">
               <v-btn
@@ -71,8 +73,7 @@
                 v-for="notification in notifications"
                 :key="notification.id"
                 class="notification-item"
-                :prepend-icon="notification.icon"
-              >
+                :prepend-icon="notification.icon">
                 <v-list-item-title>{{ notification.title }}</v-list-item-title>
                 <v-list-item-subtitle>{{ notification.message }}</v-list-item-subtitle>
                 <template #append>
@@ -81,7 +82,7 @@
               </v-list-item>
             </v-list>
           </v-menu>
-
+          <!-- 使用者選單 -->
           <v-menu location="bottom end" offset="10" transition="scale-transition" :close-on-content-click="false">
             <template #activator="{ props }">
               <v-btn
@@ -222,225 +223,3 @@ const handleLogout = async () => {
   await router.push({ name: 'login' })
 }
 </script>
-
-<style lang="scss" scoped>
-.menu-toggle-btn {
-  display: none;
-}
-
-.header-menu {
-  min-width: 180px;
-  padding: 8px;
-  border: 1px solid rgba(247, 127, 0, 0.32);
-  border-radius: 12px !important;
-  background:
-    linear-gradient(180deg, rgba(5, 25, 50, 0.96) 0%, rgba(1, 19, 43, 0.98) 100%) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 18px 42px rgba(0, 0, 0, 0.38),
-    0 0 22px rgba(247, 127, 0, 0.16);
-  color: rgba(226, 235, 247, 0.86);
-  backdrop-filter: blur(12px);
-}
-
-.menu-panel-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 4px 4px 2px;
-
-  p {
-    margin: 0;
-    color: rgba(255, 179, 71, 0.72);
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0;
-    text-transform: uppercase;
-  }
-
-  h3 {
-    margin: 2px 0 0;
-    color: rgba(255, 255, 255, 0.94);
-    font-size: 16px;
-    font-weight: 800;
-    letter-spacing: 0;
-  }
-}
-
-.notification-menu {
-  width: 340px;
-  max-width: calc(100vw - 24px);
-}
-
-.notification-count {
-  flex: 0 0 auto;
-  font-weight: 800;
-}
-
-.notification-item {
-  min-height: 68px;
-  margin: 4px 0;
-  border-radius: 8px !important;
-  color: rgba(226, 235, 247, 0.86) !important;
-
-  :deep(.v-icon) {
-    color: rgba(255, 179, 71, 0.78);
-  }
-
-  :deep(.v-list-item-title) {
-    color: rgba(255, 255, 255, 0.94);
-    font-size: 14px;
-    font-weight: 800;
-    letter-spacing: 0;
-  }
-
-  :deep(.v-list-item-subtitle) {
-    margin-top: 3px;
-    color: rgba(226, 235, 247, 0.62);
-    font-size: 12px;
-    line-height: 1.45;
-    opacity: 1;
-  }
-
-  &:hover {
-    background: rgba(245, 251, 255, 0.07) !important;
-  }
-}
-
-.notification-time {
-  align-self: flex-start;
-  margin-top: 3px;
-  color: rgba(226, 235, 247, 0.46);
-  font-size: 11px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.header-menu-item {
-  min-height: 42px;
-  margin: 2px 0;
-  border-radius: 8px !important;
-  color: rgba(226, 235, 247, 0.76) !important;
-  font-weight: 700;
-  letter-spacing: 0;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    transform 0.2s ease;
-
-  :deep(.v-icon) {
-    color: rgba(255, 179, 71, 0.72);
-    transition: color 0.2s ease;
-  }
-
-  &:hover {
-    background: rgba(245, 251, 255, 0.08) !important;
-    color: rgba(255, 255, 255, 0.94) !important;
-    transform: translateX(2px);
-
-    :deep(.v-icon) {
-      color: #ffb347;
-    }
-  }
-}
-
-.header-menu-item--active {
-  background: linear-gradient(135deg, rgba(255, 179, 71, 0.24), rgba(247, 127, 0, 0.34)) !important;
-  color: #fff !important;
-  box-shadow: inset 0 0 0 1px rgba(255, 183, 71, 0.24);
-
-  :deep(.v-icon) {
-    color: #ffb347 !important;
-  }
-}
-
-.user-menu {
-  width: 300px;
-  max-width: calc(100vw - 24px);
-}
-
-.user-summary {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 4px;
-}
-
-.user-avatar {
-  flex: 0 0 auto;
-  border: 1px solid rgba(247, 127, 0, 0.4);
-  background: rgba(247, 127, 0, 0.12);
-  color: #ffb347;
-  box-shadow: 0 0 18px rgba(247, 127, 0, 0.18);
-}
-
-.user-summary__text {
-  min-width: 0;
-
-  h3,
-  p {
-    margin: 0;
-    letter-spacing: 0;
-  }
-
-  h3 {
-    color: rgba(255, 255, 255, 0.94);
-    font-size: 15px;
-    font-weight: 800;
-  }
-
-  p {
-    overflow: hidden;
-    color: rgba(226, 235, 247, 0.62);
-    font-size: 12px;
-    font-weight: 600;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-}
-
-.user-meta {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 12px;
-
-  div {
-    min-width: 0;
-    padding: 10px;
-    border: 1px solid rgba(245, 251, 255, 0.1);
-    border-radius: 8px;
-    background: rgba(245, 251, 255, 0.05);
-  }
-
-  span,
-  strong {
-    display: block;
-    letter-spacing: 0;
-  }
-
-  span {
-    color: rgba(226, 235, 247, 0.5);
-    font-size: 11px;
-    font-weight: 700;
-  }
-
-  strong {
-    margin-top: 3px;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 13px;
-  }
-}
-
-.logout-btn {
-  border: 1px solid rgba(247, 127, 0, 0.36) !important;
-  font-weight: 800;
-}
-
-@media (max-width: 540px) {
-  .menu-toggle-btn {
-    display: inline-grid;
-  }
-}
-</style>

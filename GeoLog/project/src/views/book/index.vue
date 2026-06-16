@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="book-root d-flex flex-wrap px-0 ">
+  <v-container fluid class="book-root d-flex flex-wrap px-0">
 
     <div class="left">
       <section class="workspace">

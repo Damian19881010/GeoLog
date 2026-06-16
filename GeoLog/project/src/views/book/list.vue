@@ -1,17 +1,59 @@
 <template>
-  <v-container class="pa-0 container" fluid>
+  <v-container class=" container">
     <!-- 新增旅程 / 旅程列表 / 快速過濾 -->
-    <section class="section">
-      <v-card
-        class="top add pa-5 border border-dashed border-orange21 border-opacity-100 d-flex justify-center align-center rounded-lg ga-2 flex-wrap"
-        color="transparent">
-        <!-- 快速過濾 -->
+    <section class="myTrip  mt-10 mb-5 d-flex flex-wrap align-center justify-space-between">
+      <!-- 我的旅程 -->
+      <div >
+        <p class="text-amber-lighten-1 text-label-medium font-weight-bold">TRAVEL LIBRARY</p>
+        <p class="text-white text-h1 font-weight-bold">我的旅程</p>
+        <p class="text-white opacity-70">下一趟：{{ nextTripTitle }}</p>
+      </div>
+      <!-- 旅程數、國家總數 -->
+      <div class="count d-flex ga-10 mt-5 border border-white border-opacity-50 rounded-lg py-4 px-6 align-center">
+        <div class="d-flex flex-column align-center">
+          <p class="text-amber-lighten-1 text-h2 font-weight-bold">15</p>
+          <p class="text-white opacity-70">趟旅程</p>
+        </div>
+        <v-divider vertical color="white" opacity="0.3"></v-divider>
+        <div class="d-flex flex-column align-center">
+          <p class="text-amber-lighten-1 text-h2 font-weight-bold">11</p>
+          <p class="text-white opacity-70">個國家</p>
+        </div>
+
+
+      </div>
+    </section>
+
+    <!-- 快速過濾 -->
+    <v-card class="top add pa-5 mb-10 flex-wrap" color="transparent">
+      <!-- 快速篩選 -->
+      <div class="d-flex flex-wrap ga-4 align-end justify-space-between w-100">
+        <div>
+          <p class="text-amber-lighten-1 text-label-medium font-weight-bold">QUICK FILTERS</p>
+          <p class="text-white text-h5 font-weight-bold">快速篩選</p>
+        </div>
+        <!-- 新增 / 刪除 -->
+        <div class="d-flex ga-2">
+          <v-btn color="orange21" prepend-icon="mdi-plus-circle" @click="openCreateDialog">新增旅程</v-btn>
+          <v-btn color="orange21" prepend-icon="mdi-trash-can-outline" variant="tonal" @click="isEditing = !isEditing">{{ isEditing ? '完成編輯' : '編輯旅程' }}</v-btn>
+        </div>
+      </div>
+      <!-- 下拉選單 -->
+      <div class="w-100 d-flex align-center ga-4 flex-wrap justify-start mt-3 ">
         <!-- 國家 -->
-        <v-select v-model="selectedCountry" class="text-white country-select w-100" :items="countryOptions"
-          item-title="title" item-value="value"
-          variant="outlined" density="compact" hide-details="auto" max-width="200" theme="dark"
-          clearable
-          :loading="isLocationLoading"
+        <v-select 
+          v-model="selectedCountry" 
+          class="text-white country-select w-100" 
+          :items="countryOptions"
+          item-title="title" 
+          item-value="value" 
+          variant="outlined" 
+          density="compact" 
+          hide-details="auto" 
+          max-width="400"
+          theme="dark" 
+          clearable 
+          :loading="isLocationLoading" 
           :menu-props="{ contentClass: 'country-dropdown' }">
           <template #label>
             <div class="d-flex align-center ga-2">
@@ -20,27 +62,19 @@
             </div>
           </template>
         </v-select>
-        <!-- 城市 -->
-        <v-select v-model="selectedCity" class="text-white country-select w-100" :items="cityOptions"
-          item-title="title" item-value="value"
-          variant="outlined" density="compact" hide-details="auto" max-width="200" theme="dark"
-          clearable
-          :disabled="!selectedCountry || isLocationLoading"
-          :loading="isLocationLoading"
-          :no-data-text="locationLoadError || (selectedCountry ? '沒有城市資料' : '請先選擇國家')"
-          :menu-props="{ contentClass: 'country-dropdown' }">
-          <template #label>
-            <div class="d-flex align-center ga-2">
-              <v-icon icon="mdi-map-marker" color="white"></v-icon>
-              <span class="text-orange21">城市</span>
-            </div>
-          </template>
-        </v-select>
-        <!-- 時間(年月) -->
-        <v-select v-model="selectedYear" class="text-white country-select w-100" :items="yearOptions"
-          item-title="title" item-value="value"
-          variant="outlined" density="compact" hide-details="auto" max-width="140" theme="dark"
-          clearable
+        <!-- 時間(年) -->
+        <v-select 
+          v-model="selectedYear" 
+          class="text-white country-select w-100" 
+          :items="yearOptions" 
+          item-title="title"
+          item-value="value" 
+          variant="outlined" 
+          density="compact" 
+          hide-details="auto" 
+          max-width="200" 
+          theme="dark"
+          clearable 
           :menu-props="{ contentClass: 'country-dropdown' }">
           <template #label>
             <div class="d-flex align-center ga-2">
@@ -49,11 +83,20 @@
             </div>
           </template>
         </v-select>
-        <v-select v-model="selectedMonth" class="text-white country-select w-100" :items="monthOptions"
-          item-title="title" item-value="value"
-          variant="outlined" density="compact" hide-details="auto" max-width="140" theme="dark"
-          clearable
-          :disabled="!selectedYear"
+        <!-- 時間(年) -->
+        <v-select 
+          v-model="selectedMonth" 
+          class="text-white country-select w-100" 
+          :items="monthOptions"
+          item-title="title" 
+          item-value="value" 
+          variant="outlined" 
+          density="compact" 
+          hide-details="auto" 
+          max-width="200"
+          theme="dark" 
+          clearable 
+          :disabled="!selectedYear" 
           :no-data-text="selectedYear ? '該年份沒有月份資料' : '請先選擇年份'"
           :menu-props="{ contentClass: 'country-dropdown' }">
           <template #label>
@@ -63,74 +106,74 @@
             </div>
           </template>
         </v-select>
-        <v-spacer />
+      </div>
+    </v-card>
 
-        <!-- 文字 -->
-        <div class="d-flex ga-2">
-          <v-btn color="orange21" prepend-icon="mdi-plus-circle" @click="openCreateDialog">新增旅程</v-btn>
-          <v-btn color="orange21" prepend-icon="mdi-trash-can-outline" variant="tonal" @click="isEditing = !isEditing">{{ isEditing ? '完成編輯' : '編輯旅程' }}</v-btn>
-        </div>
+    <v-row class="row mb-10" justify="start">
 
-      </v-card>
-    </section>
+      <v-col cols="12" xl="3" lg="4" md="6" sm="6" v-for="item in filteredTrips" :key="item.id">
+        <v-card class="info w-100 h-100" @click="goToJourney(item.id)">
+          <!-- 編輯按鈕 -->
+          <div class="delete px-5 ga-2 d-flex justify-space-between w-100 flex-wrap" v-if="isEditing">
+            <v-btn size="small" color="orange" prepend-icon="mdi-delete" text="刪除" @click.stop="deleteTrip(item.id)">
+            </v-btn>
+            <v-btn prepend-icon="mdi-pencil" size="small" color="orange" text="編輯"
+              @click.stop="openEditDialog(item)"></v-btn>
+            <v-spacer></v-spacer>
+            <v-btn class="opacity-80" append-icon="mdi-share" color="black" size="small" text="分享共編"
+              @click.stop></v-btn>
+          </div>
+          <!-- 圖片 -->
+          <div class="image-container pa-0" style="max-height: 200px; overflow: hidden;">
+            <v-img :src="item.image" max-width="100%" height="100%"></v-img>
+          </div>
 
-    <section class="section">
-      <v-list class="bg-transparent list px-2">
-        <v-row class="row " justify="start" >
+          <!-- 文字 -->
+          <v-card-item class="item">
+            <div class="d-flex ga-2 align-center w-100">
+              <!-- 國籍 -->
+              <v-chip 
+                v-if="item.country !== ''" 
+                label 
+                color="white" 
+                size="small" 
+                class="country-chip">
+                <template #prepend>
+                  <span v-if="getCountryFlagClass(item.country)" :class="['fi', getCountryFlagClass(item.country), 'country-flag']" aria-hidden="true"></span>
+                </template>
+                {{ getLocationLabel(item.country) }}
+              </v-chip>
+              <!-- 城市 -->
+              <v-chip 
+                v-if="item.city !== ''" 
+                color="yellow" 
+                size="small" 
+                prepend-icon="mdi-map-marker-radius">
+                {{ getLocationLabel(item.city) }}
+              </v-chip>
+            </div>
+            <!-- 標題 -->
+            <p class="title py-2">{{ item.name }}</p>
+            <!-- <v-divider></v-divider> -->
+            <!-- 日期範圍 -->
+            <div class="d-flex align-center justify-start ga-2">
+              <!-- <v-chip label color="orange" size="start ga-2d-icon="mdi-calendar-range">{{ item.startDate }}~{{ item.endDate }}</v-chip> -->
+              <v-icon size="x-small" class="mr-1">mdi-calendar-range</v-icon>
+              <p class="opacity-80 text-blue-grey-lighten-1 text-body-small">{{ item.startDate }}</p>
+              <p class="opacity-80 text-blue-grey-lighten-1 text-body-small">~</p>
+              <p class="opacity-80 text-blue-grey-lighten-1 text-body-small">{{ item.endDate }}</p>
+            </div>
+          </v-card-item>
 
-          <v-col cols="12" xl="3" lg="4" md="4" sm="6" v-for="item in filteredTrips" :key="item.id">
-            <v-card class="info w-100 h-100" @click="goToJourney(item.id)" >
-              <div class="delete px-5 ga-2 d-flex justify-space-between w-100 flex-wrap"  v-if="isEditing">
-                <v-btn 
-                  size="small" 
-                  color="orange" 
-                  prepend-icon="mdi-delete"
-                  text="刪除" 
-                  @click.stop="deleteTrip(item.id)">
-                </v-btn>
-                <v-btn prepend-icon="mdi-pencil" size="small" color="orange" text="編輯" @click.stop="openEditDialog(item)"></v-btn>
-                <v-spacer></v-spacer>
-                <v-btn class="opacity-80" append-icon="mdi-share" color="black" size="small" text="分享共編" @click.stop></v-btn>
-              </div>
-              <!-- 圖片 -->
-              <div class="image-container pa-0" style="max-height: 200px; overflow: hidden;">
-                <v-img :src="item.image" max-width="100%" height="100%"></v-img>
-              </div>
-              
-              <!-- 文字 -->
-              <v-card-item class="item">
-                <div class="d-flex ga-2 align-center w-100">
-                  <v-chip v-if="item.country !== ''" label color="white" class="country-chip">
-                    <template #prepend>
-                      <span
-                        v-if="getCountryFlagClass(item.country)"
-                        :class="['fi', getCountryFlagClass(item.country), 'country-flag']"
-                        aria-hidden="true"
-                      ></span>
-                    </template>
-                    {{ getLocationLabel(item.country) }}
-                  </v-chip>
-                  <v-chip v-if="item.city !== ''"  color="yellow" prepend-icon="mdi-map-marker-radius">{{ getLocationLabel(item.city) }}</v-chip>
-                </div>
-                  <p class="title py-2">{{ item.name }}</p>
+        </v-card>
+      </v-col>
 
-                <div class="d-flex justify-space-between mb-2 ">
-                  <v-chip label color="orange" size="small" prepend-icon="mdi-calendar-range">{{ item.startDate }}~{{ item.endDate }}</v-chip>
-                </div>
-              </v-card-item>
+    </v-row>
+    <!-- 新增旅程按鈕(RWD) -->
+    <v-btn class="rwdbtn" color="orange21" icon="mdi-plus"  @click="openCreateDialog"></v-btn>
+    <!-- 新增旅程 -->
+    <Creat v-model="createDialog" :mode="dialogMode" :initial-data="editingTripFormData" @create="onTripCreated" @update="onTripUpdated" />
 
-            </v-card>
-          </v-col>
-        </v-row>
-      </v-list>
-    </section>
-
-    <Creat
-      v-model="createDialog"
-      :mode="dialogMode"
-      :initial-data="editingTripFormData"
-      @create="onTripCreated"
-      @update="onTripUpdated" />
   </v-container>
 </template>
 
@@ -140,14 +183,7 @@ import { useRouter } from 'vue-router'
 import tripImg from '@/assets/images/trip.png'
 import Creat from './components/creat.vue'
 import type { TripFormData } from './components/creat.vue'
-import {
-  fallbackCountryCityMap,
-  getCountryFlagClass,
-  getLocationLabel,
-  type CountryCityMap as LocationCountryCityMap,
-  toCityValue,
-  toCountryValue,
-} from './locationConfig'
+import { fallbackCountryCityMap, getCountryFlagClass, getLocationLabel, type CountryCityMap as LocationCountryCityMap, toCityValue, toCountryValue,} from './locationConfig'
 import type { Trip } from './types'
 import { useTrips } from './useTrips'
 
@@ -444,6 +480,26 @@ const router = useRouter()
 
 const { trips } = useTrips()
 
+const nextTripTitle = computed(() => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const nextTrip = trips.value
+    .filter((trip) => {
+      const range = getTripDateRange(trip)
+      return range ? range.start >= today : false
+    })
+    .sort((left, right) => {
+      const leftRange = getTripDateRange(left)
+      const rightRange = getTripDateRange(right)
+
+      if (!leftRange || !rightRange) return 0
+      return leftRange.start.getTime() - rightRange.start.getTime()
+    })[0]
+
+  return nextTrip?.name ?? '目前沒有即將出發的旅程'
+})
+
 const dialogMode = computed(() => editingTripId.value === null ? 'create' : 'edit')
 
 const editingTripFormData = computed<TripFormData | null>(() => {
@@ -521,43 +577,62 @@ const isEditing = ref(false)
   }
 }
 
-
-
-.section {
-  width: 80%;
+.container {
+  max-width: 1400px;
   margin: 0 auto;
-  @include breakpoint(960px) {
-    width: 95% !important;
+  padding: 0 16px;
+
+  @include breakpoint(1280px) {
+    padding: 0 8px;
+    width: 95%;
   }
 
-
-  .top {
-    position: fixed;
-    top: 140px;
-    width: 80%;
-    @include breakpoint(960px) {
-      width: 95% !important;
-    }
-    margin: 0 auto;
-    left: 0;
-    right: 0;
-    z-index: 999;
-    background-color: rgba(255, 127, 80, 0.151);
-
-    &:hover {
-      background-color: rgba(238, 63, 0, 0.233);
-    }
-
-
-    .country-select {
-      max-width: 200px !important;
-      @include breakpoint(960px) {
-        max-width: 100% !important;
+  .myTrip {
+    @include breakpoint(912px) {
+      flex-direction: column;
+      align-items: flex-start;
+      .count {
+        width: 100% !important;
+        justify-content: center !important;
       }
     }
   }
 
 
+  .rwdbtn {
+    display: none;
+    position: fixed;
+    bottom: 104px;
+    right: 24px;
+    z-index: 999;
+
+    @include breakpoint(768px) {
+      display: block;
+    }
+  }
+}
+
+
+.top {
+  background-color: rgba(80, 135, 255, 0.048) !important;
+  border: 1px solid rgba(255, 187, 0, 0.733) !important;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(255, 153, 0, 0.137), 0 0 16px rgba(255, 153, 0, 0.24) !important;
+
+  @include breakpoint(960px) {
+    width: 100% !important;
+    margin: 10px auto 25px;
+  }
+
+  &:hover {
+    background-color: rgba(238, 63, 0, 0.233);
+  }
+
+  .country-select {
+    @include breakpoint(960px) {
+      max-width: 100% !important;
+    }
+  }
 }
 
 .section:nth-child(2) {
@@ -570,8 +645,9 @@ const isEditing = ref(false)
   left: 0;
   right: 0;
   z-index: 999;
+
   @include breakpoint(960px) {
-   top: 320px;
+    top: 320px;
   }
 
   .list {
@@ -586,20 +662,19 @@ const isEditing = ref(false)
 
 .info {
   backdrop-filter: blur(3px);
-  background-color: #000e24a2 !important;
-  background: linear-gradient(135deg, #000E24 0%, rgba(0, 157, 230, 0.4) 100%);
+  background-color: #0019429f !important;
+  border: 1px solid rgba(107, 107, 107, 0.637) !important;
+  // background: linear-gradient(135deg, #000e247a 0%, rgba(0, 157, 230, 0.4) 100%);
   color: rgb(255, 153, 0);
   font-weight: bold;
   letter-spacing: 1px;
   box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.705);
   border-radius: 16px;
-  transition: all 0.3s ease;
-
-  
+  transition: all 0.5s ease !important;
 
   &:hover {
     background: linear-gradient(135deg, #000E24 0%, rgba(0, 157, 230, 0.7) 100%) !important;
-    transition: all 0.3s ease;
+    transition: all 0.5s ease !important;
     transform: translateY(-5px);
   }
 
@@ -608,10 +683,11 @@ const isEditing = ref(false)
   }
 
   .title {
-    font-size: 1rem;
+    font-size: 1.25rem;
     color: aliceblue;
     letter-spacing: 2px;
   }
+
   .delete {
     position: absolute;
     top: 8px;
@@ -640,25 +716,5 @@ const isEditing = ref(false)
   left: 0;
   right: 0;
   z-index: 999;
-}
-
-.country-dropdown {
-  .v-list {
-    background: linear-gradient(160deg, #0d1a33 0%, #0a1628 100%) !important;
-    border: 1px solid rgba(255, 165, 0, 0.25);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 16px rgba(255, 132, 0, 0.08);
-    border-radius: 10px !important;
-
-    .v-list-item {
-      color: rgba(255, 255, 255, 0.85) !important;
-      letter-spacing: 1px;
-
-      &:hover,
-      &--active {
-        background: rgba(255, 140, 0, 0.15) !important;
-        color: #ffb347 !important;
-      }
-    }
-  }
 }
 </style>
